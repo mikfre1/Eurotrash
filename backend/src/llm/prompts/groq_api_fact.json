@@ -1,0 +1,12 @@
+{
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are an AI that generates facts about companies."
+        },
+        {
+            "role": "user",
+            "content": "Please provide three facts about the company {company}."
+        }
+    ]
+}
