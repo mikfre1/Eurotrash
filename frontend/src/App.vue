@@ -1,10 +1,7 @@
 <template>
   <v-app>
-    <v-app-bar app color="blue-grey">
-      <h2>Mike Jason Frei 20-488-144</h2>
-    </v-app-bar>
     <v-main>
-      <ConfigurationPanel/>
+      <MainContainer/>
     </v-main>
   </v-app>
 </template>
@@ -20,17 +17,19 @@ html {
 html::-webkit-scrollbar {
   width: 0px; /* For Chrome, Safari, and Opera */
 }
+
 </style>
 
 
 <script>
-import ConfigurationPanel from './components/ConfigurationPanel'
+import MainContainer from './components/MainContainer.vue';
+// import ConfigurationPanel from './components/ConfigurationPanel.vue';
 
 export default {
   name: 'App',
 
   components: {
-    ConfigurationPanel,
+    MainContainer,
   },
 
   data: () => ({

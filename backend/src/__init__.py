@@ -1,98 +1,112 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask_restx import Resource, Api
-from flask_pymongo import PyMongo
-from pymongo.collection import Collection
-from .model import Company
-from flask import request
-from src.llm.groq_llm import GroqClient
+import pandas as pd
 
-# Configure Flask & Flask-PyMongo:
-# python app.py run
+# Initialize Flask app
 app = Flask(__name__)
-# allow access from any frontend
-cors = CORS()
-cors.init_app(app, resources={r"*": {"origins": "*"}})
-# add your mongodb URI
-app.config["MONGO_URI"] = "mongodb://localhost:27017/companiesdatabase"
-pymongo = PyMongo(app)
-# Get a reference to the companies collection.
-companies: Collection = pymongo.db.companies
-api = Api(app)
-class CompaniesList(Resource):
-    def get(self, args=None):
-        # retrieve the arguments and convert to a dict
-        args = request.args.to_dict()
-        print(args)
-        # If the user specified category is "All" we retrieve all companies
-        if args['category'] == 'All':
-            cursor = companies.find()
-        # In any other case, we only return the companies where the category applies
-        else:
-            cursor = companies.find(args)
-        # we return all companies as json
-        return [Company(**doc).to_json() for doc in cursor]
+CORS(app)
 
-class Companies(Resource):
-    def get(self, id):
-        import pandas as pd
-        from statsmodels.tsa.ar_model import AutoReg
-        # search for the company by ID
-        cursor = companies.find_one_or_404({"id": id})
-        company = Company(**cursor)
-        # retrieve args
-        args = request.args.to_dict()
-        # retrieve the profit
-        profit = company.profit
-        # add to df
-        profit_df = pd.DataFrame(profit).iloc[::-1]
-        if args['algorithm'] == 'random':
-            # retrieve the profit value from 2021
-            prediction_value = int(profit_df["value"].iloc[-1])
-            # add the value to profit list at position 0
-            company.profit.insert(0, {'year': 2022, 'value': prediction_value})
-        elif args['algorithm'] == 'regression':
-            # create model
-            model_ag = AutoReg(endog=profit_df['value'], lags=1, trend='c', seasonal=False, exog=None, hold_back=None,
-                               period=None, missing='none')
-            # train the model
-            fit_ag = model_ag.fit()
-            # predict for 2022 based on the profit data
-            prediction_value = fit_ag.predict(start=len(profit_df), end=len(profit_df), dynamic=False).values[0]
-            # add the value to profit list at position 0
-            company.profit.insert(0, {'year': 2022, 'value': prediction_value})
-        return company.to_json()
+# Load datasets
+contestants_df = pd.read_csv('../dataset/contestants_cleaned.csv')
+votes_df = pd.read_csv('../dataset/votes_cleaned.csv')
+
+# Endpoint: Most Dominating Countries
+@app.route('/api/most_dominating_countries', methods=['GET'])
+def most_dominating_countries():
+    # Get year from query params
+    year = request.args.get('year', default=None, type=int)
+
+    # Filter by year if provided
+    filtered = contestants_df
+    if year:
+        filtered = contestants_df[contestants_df['year'] == year]
+
+    # Aggregate data to sum points_final by country
+    dominating_countries = (
+        filtered.groupby('to_country')['points_final']
+        .sum()
+        .reset_index()
+        .rename(columns={'points_final': 'total_points'})
+        .sort_values('total_points', ascending=False)
+    )
+
+    # Return the result as JSON
+    return jsonify(dominating_countries.to_dict(orient='records'))
+
+# Endpoint: Get all available years from dataset
+@app.route('/api/available_years', methods=['GET'])
+def get_available_years():
+    years = contestants_df['year'].unique().tolist()
+    years.sort(reverse=True)  # Optional: Sort years in descending order
+    return jsonify(years)
 
 
-class GroqAPIPoem(Resource):
-    def get(self, id):
-        # Create GroqClient instance
-        client = GroqClient()
-        cursor = companies.find_one_or_404({"id": id})
-        company = Company(**cursor)
 
-        # Call the generate_info method with company name and prompt
-        response = client.generate_poem(company.name, 'src/llm/prompts/groq_api_poem.json')
-        print(response)
+# Endpoint: Yearly Rankings
+@app.route('/api/yearly_rankings', methods=['GET'])
+def yearly_rankings():
+    # Filter by year if provided
+    year = request.args.get('year', default=None, type=int)
+    if year:
+        filtered = contestants_df[contestants_df['year'] == year]
+    else:
+        filtered = contestants_df
 
-        # Return the Groq API response as JSON
-        return {"result": response}, 200
+    yearly_rankings = (
+        filtered.groupby(['year', 'to_country'])
+        .size()
+        .reset_index(name='count')
+        .pivot(index='year', columns='to_country', values='count')
+        .fillna(0)
+    )
+    return jsonify(yearly_rankings.to_dict())
 
-class GroqAPIFact(Resource):
-    def get(self, id):
-        # Create GroqClient instance
-        client = GroqClient()
-        cursor = companies.find_one_or_404({"id": id})
-        company = Company(**cursor)
+# Endpoint: Word Cloud Data
+@app.route('/api/word_cloud', methods=['GET'])
+def word_cloud():
+    # Analyze words in song lyrics or descriptions
+    lyrics = contestants_df['lyric'].dropna().str.cat(sep=' ').lower()
+    words = pd.Series(lyrics.split()).value_counts().head(50)
+    return jsonify(words.to_dict())
 
-        # Call the generate_info method with company name and prompt
-        response = client.generate_poem(company.name, 'src/llm/prompts/groq_api_fact.json')
-        print(response)
+# Endpoint: Countries in Favor (Heatmap Data)
+@app.route('/api/countries_in_favor', methods=['GET'])
+def countries_in_favor():
+    # Aggregate votes from one country to another
+    heatmap_data = (
+        votes_df.groupby(['from_country', 'to_country'])
+        .size()
+        .reset_index(name='vote_count')
+    )
+    return jsonify(heatmap_data.to_dict(orient='records'))
 
-        # Return the Groq API response as JSON
-        return {"result": response}, 200
+# Endpoint: Songs List
+@app.route('/api/songs_list', methods=['GET'])
+def songs_list():
+    # Filter songs based on year or country
+    year = request.args.get('year', default=None, type=int)
+    country = request.args.get('country', default=None, type=str)
 
-api.add_resource(CompaniesList, '/companies')
-api.add_resource(Companies, '/companies/<int:id>')
-api.add_resource(GroqAPIPoem, '/groq/poem/<int:id>')
-api.add_resource(GroqAPIFact, '/groq/fact/<int:id>')
+    filtered = contestants_df
+    if year:
+        filtered = filtered[filtered['year'] == year]
+    if country:
+        filtered = filtered[filtered['to_country'] == country]
+
+    songs = filtered[['year', 'song', 'to_country', 'place_contest']].sort_values('year', ascending=False)
+    return jsonify(songs.to_dict(orient='records'))
+
+# Endpoint: Song Details
+@app.route('/api/song_details', methods=['GET'])
+def song_details():
+    # Fetch details of a song by song name
+    song_name = request.args.get('song', default=None, type=str)
+    if not song_name:
+        return jsonify({'error': 'Song name is required'}), 400
+
+    song_details = contestants_df[contestants_df['song'] == song_name].to_dict(orient='records')
+    return jsonify(song_details[0] if song_details else {'error': 'Song not found'})
+
+# Run Flask app
+if __name__ == '__main__':
+    app.run(debug=True)
