@@ -20,7 +20,7 @@ def most_dominating_countries():
         return jsonify({"error": "Year parameter is required"}), 400
 
     filtered = contestants_df[contestants_df['year'] == year]
-    print(f"Filtered data for year {year}:\n{filtered}")  # Debugging log
+    # print(f"Filtered data for year {year}:\n{filtered}")  # Debugging log
 
     dominating_countries = (
         filtered.groupby('to_country')['points_final']
@@ -29,7 +29,7 @@ def most_dominating_countries():
         .rename(columns={'points_final': 'total_points'})
         .sort_values('total_points', ascending=False)
     )
-    print(f"Aggregated data:\n{dominating_countries}")  # Debugging log
+    # print(f"Aggregated data:\n{dominating_countries}")  # Debugging log
 
     return jsonify(dominating_countries.to_dict(orient='records'))
 
@@ -85,6 +85,8 @@ def word_cloud():
 
     # Convert to JSON format
     word_cloud_data = [{"word": word, "count": count} for word, count in common_words]
+    print(word_cloud_data)
+
     return jsonify(word_cloud_data)
 
 # Endpoint: Countries in Favor (Heatmap Data)
