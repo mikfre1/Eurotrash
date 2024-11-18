@@ -10,13 +10,13 @@
           <v-col cols="12" md="4" class="full-height">
             <!-- Row 1, Widget 1 -->
             <v-card class="widget mb-4">
-              <div class="control-panel-font">Dominating Countries</div>
+                <div class="control-panel-font">Most Dominating Countries</div>
               <MostDominatingCountries :selectedYear="selectedYear" />
             </v-card>
             <!-- Row 2, Widget 2 -->
             <v-card class="widget">
-              <div class="control-panel-font">Widget 2 Title</div>
-              <div class="widget-placeholder">Placeholder for Widget 2</div>
+              <div class="control-panel-font">Word Cloud</div>
+              <WordCloud :selectedYear="selectedYear" />
             </v-card>
           </v-col>
   
@@ -49,9 +49,10 @@
 <script>
 import ConfigurationPanel from './ConfigurationPanel.vue';
 import MostDominatingCountries from './MostDominatingCountries.vue';
+import WordCloud from './WordCloud.vue';
 
 export default {
-  components: { ConfigurationPanel, MostDominatingCountries },
+  components: { ConfigurationPanel, MostDominatingCountries, WordCloud },
   data() {
     return {
       selectedYear: null, // The currently selected year

@@ -16,8 +16,8 @@
               label="Select Year"
               dense
               outlined
-              v-model="selectedYear"
-              @change="onYearChange"
+              :model-value="selectedYear"
+              @update:modelValue="onYearChange"
             />
 
             <!-- View Selector -->
@@ -64,15 +64,20 @@ export default {
       try {
         const response = await axios.get("http://127.0.0.1:5000/api/available_years");
         this.years = response.data;
-        this.selectedYear = this.years[0]; // Default to the most recent year
-        this.onYearChange(); // Trigger map update for default year
+
+        if (this.years.length > 0) {
+          this.selectedYear = this.years[0]; // Default to the most recent year
+          console.log("Default year selected:", this.selectedYear); // Debugging log
+          this.onYearChange(this.selectedYear); // Trigger map update for default year
+        }
       } catch (error) {
         console.error("Error fetching available years:", error);
       }
     },
-    onYearChange() {
-      console.log("Changed year:", this.selectedYear)
-      this.$emit("yearChanged", this.selectedYear); // Emit the selected year to the parent
+    onYearChange(newValue) {
+      this.selectedYear = newValue; // Update selectedYear with the new value
+      console.log("Year changed to:", this.selectedYear); // Debugging log
+      this.$emit("yearChanged", this.selectedYear); // Emit event to parent
     },
   },
 };

@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h2>Most Dominating Countries</h2>
     <v-card>
       <!-- World Map -->
       <div id="worldmap" class="world-map"></div>
@@ -25,13 +24,13 @@ export default {
       immediate: true, // Fetch data on initial load
       handler(newYear) {
         console.log("Year changed to:", newYear); // Debugging log
-        this.fetchCountryData(); // Fetch new data
+        this.fetchCountryData(newYear); // Fetch new data
       },
     },
   },
   mounted() {
     this.initializeMap();
-    this.fetchCountryData();
+    this.fetchCountryData(this.selectedYear);
   },
   methods: {
     async fetchCountryData() {
@@ -64,61 +63,67 @@ export default {
     },
     updateMap() {
       if (this.geoJsonLayer) {
-        console.log("Updating map with new country data:", this.countryData); // Debugging log
-        this.geoJsonLayer.setStyle(this.styleCountry); // Apply styles
+        this.geoJsonLayer.eachLayer((layer) => {
+          // Reapply styles
+          const feature = layer.feature;
+          layer.setStyle(this.styleCountry(feature));
+
+          // Update popup content
+          this.onEachFeature(feature, layer);
+        });
       }
     },
     styleCountry(feature) {
-      // Find the country in the data
-      const country = this.countryData.find(
-        (c) => c.to_country === feature.properties.name
-      );
-      const totalPoints = country ? country.total_points : 0;
+    // Find the country in the data
+    const country = this.countryData.find(
+      (c) => c.to_country === feature.properties.name
+    );
+    const totalPoints = country ? country.total_points : 0;
 
-      // Determine color based on the distribution of total_points
-      const getColor = (value, thresholds) => {
-        return value > thresholds[4]
-          ? "#FF0000" // Bright red for the top tier
-          : value > thresholds[3]
-          ? "#FF4500" // Orange-red
-          : value > thresholds[2]
-          ? "#FFA500" // Orange
-          : value > thresholds[1]
-          ? "#FFFF00" // Yellow
-          : value > thresholds[0]
-          ? "#00FF00" // Bright green
-          : "#D3D3D3"; // Light gray for no data
-      };
+    // Determine color based on the distribution of total_points
+    const getColor = (value, thresholds) => {
+      return value > thresholds[4]
+        ? "#FF0000" // Bright red for the top tier
+        : value > thresholds[3]
+        ? "#FF4500" // Orange-red
+        : value > thresholds[2]
+        ? "#FFA500" // Orange
+        : value > thresholds[1]
+        ? "#FFFF00" // Yellow
+        : value > thresholds[0]
+        ? "#00FF00" // Bright green
+        : "#D3D3D3"; // Light gray for no data
+    };
 
-      // Calculate distribution thresholds dynamically
-      const values = this.countryData.map((c) => c.total_points);
-      const thresholds = this.calculateQuantiles(values);
+    // Calculate distribution thresholds dynamically
+    const values = this.countryData.map((c) => c.total_points);
+    const thresholds = this.calculateQuantiles(values);
 
-      return {
-        fillColor: getColor(totalPoints, thresholds),
-        weight: 1,
-        opacity: 1,
-        color: "gray",
-        fillOpacity: 0.9, // Make the colors more opaque
-      };
-    },
+    return {
+      fillColor: getColor(totalPoints, thresholds),
+      weight: 1,
+      opacity: 1,
+      color: "gray",
+      fillOpacity: 0.9, // Make the colors more opaque
+    };
+  },
     calculateQuantiles(values) {
-      if (!values || values.length === 0) {
-        return [0, 0, 0, 0, 0]; // Default thresholds
-      }
+    if (!values || values.length === 0) {
+      return [0, 0, 0, 0, 0]; // Default thresholds
+    }
 
-      // Sort values
-      const sortedValues = values.sort((a, b) => a - b);
+    // Sort values
+    const sortedValues = values.sort((a, b) => a - b);
 
-      // Calculate quantiles (e.g., 10%, 30%, 50%, 70%, 90%)
-      const quantiles = [0.1, 0.3, 0.5, 0.7, 0.9].map((q) => {
-        const pos = Math.floor(q * sortedValues.length) - 1;
-        return sortedValues[Math.max(pos, 0)];
-      });
+    // Calculate quantiles (e.g., 20%, 40%, 60%, 80%, 100%)
+    const quantiles = [0.2, 0.4, 0.6, 0.8, 1.0].map((q) => {
+      const pos = Math.floor(q * sortedValues.length) - 1;
+      return sortedValues[Math.max(pos, 0)];
+    });
 
-      console.log("Calculated radical quantiles:", quantiles); // Debugging log
-      return quantiles;
-    },
+    // console.log("Calculated quantiles:", quantiles); // Debugging log
+    return quantiles;
+  },
     onEachFeature(feature, layer) {
       // Add a popup for each country
       const country = this.countryData.find(
