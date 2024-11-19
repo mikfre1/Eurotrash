@@ -33,8 +33,6 @@ def most_dominating_countries():
 
     return jsonify(dominating_countries.to_dict(orient='records'))
 
-
-
 # Endpoint: Get all available years from dataset
 @app.route('/api/available_years', methods=['GET'])
 def get_available_years():
@@ -92,13 +90,37 @@ def word_cloud():
 # Endpoint: Countries in Favor (Heatmap Data)
 @app.route('/api/countries_in_favor', methods=['GET'])
 def countries_in_favor():
-    # Aggregate votes from one country to another
+    # Retrieve year from query parameters
+    year = request.args.get('year', type=int)
+    if not year:
+        return jsonify({"error": "Year parameter is required"}), 400
+
+    # Filter votes by the selected year
+    filtered_votes = votes_df[votes_df['year'] == year]
+
+    # Aggregate votes into a matrix: points given by one country to another
     heatmap_data = (
-        votes_df.groupby(['from_country', 'to_country'])
-        .size()
-        .reset_index(name='vote_count')
+        filtered_votes.groupby(['from_country_id', 'to_country_id'])['total_points']
+        .sum()
+        .reset_index(name='vote_count')  # Summing the points exchanged
     )
-    return jsonify(heatmap_data.to_dict(orient='records'))
+    
+    # Ensure all combinations are represented (even if some have zero points)
+    all_countries = sorted(
+        set(filtered_votes['from_country_id']) | set(filtered_votes['to_country_id'])
+    )
+    heatmap_matrix = pd.DataFrame(index=all_countries, columns=all_countries).fillna(0)
+
+    for _, row in heatmap_data.iterrows():
+        heatmap_matrix.at[row['from_country_id'], row['to_country_id']] = row['vote_count']
+
+    # Convert to JSON-friendly format
+    heatmap_response = {
+        "countries": all_countries,
+        "matrix": heatmap_matrix.values.tolist(),
+    }
+
+    return jsonify(heatmap_response)
 
 # Endpoint: Songs List
 @app.route('/api/songs_list', methods=['GET'])

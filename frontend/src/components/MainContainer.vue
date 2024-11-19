@@ -29,8 +29,8 @@
             </v-card>
             <!-- Row 2, Widget 4 -->
             <v-card class="widget">
-              <div class="control-panel-font">Widget 4 Title</div>
-              <div class="widget-placeholder">Placeholder for Widget 4</div>
+              <div class="control-panel-font">Voting Matrix</div>
+              <VotingMatrix :selectedYear="selectedYear" :votingData="votingData" />
             </v-card>
           </v-col>
   
@@ -50,9 +50,10 @@
 import ConfigurationPanel from './ConfigurationPanel.vue';
 import MostDominatingCountries from './MostDominatingCountries.vue';
 import WordCloud from './WordCloud.vue';
+import VotingMatrix from './VotingMatrix.vue';
 
 export default {
-  components: { ConfigurationPanel, MostDominatingCountries, WordCloud },
+  components: { ConfigurationPanel, MostDominatingCountries, WordCloud, VotingMatrix},
   data() {
     return {
       selectedYear: null, // The currently selected year
