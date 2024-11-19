@@ -10,7 +10,7 @@
   
   export default {
     props: {
-      selectedYear: {
+      selectedYearRange: {
         type: Number,
         required: true,
       },
@@ -22,23 +22,26 @@
       };
     },
     watch: {
-      selectedYear: {
+      selectedYearRange: {
         immediate: true,
-        handler(newYear) {
-          this.fetchVotingData(newYear); // Fetch data whenever the year changes
+        handler() {
+          this.fetchVotingData(); // Fetch data whenever the year changes
         },
       },
     },
     methods: {
-      async fetchVotingData(year) {
-        if (!year) {
+      async fetchVotingData() {
+        if (!this.selectedYearRange) {
           console.warn("Year is required to fetch voting data.");
           return;
         }
   
         try {
           const response = await axios.get("http://127.0.0.1:5000/api/countries_in_favor", {
-            params: { year },
+            params: { 
+              yearRangeStart: this.selectedYearRange[0],
+              yearRangeEnd: this.selectedYearRange[1]
+            },
           });
   
           const { countries, matrix } = response.data;

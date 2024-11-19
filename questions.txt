@@ -1,0 +1,1 @@
+1. Colors for the heatmap (should the best countries be green contradicting usual heat map guidelines?)

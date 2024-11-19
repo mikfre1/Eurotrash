@@ -12,15 +12,20 @@ CORS(app)
 contestants_df = pd.read_csv('../dataset/contestants_cleaned.csv')
 votes_df = pd.read_csv('../dataset/votes_cleaned.csv')
 
+
 # Endpoint: Most Dominating Countries
+#  --> adjust s.t:
+# - for each year it adds the points
 @app.route('/api/most_dominating_countries', methods=['GET'])
 def most_dominating_countries():
-    year = request.args.get('year', type=int)
-    if not year:
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+    print(yearRangeStart)
+    print(yearRangeEnd)
+    if not yearRangeStart:
         return jsonify({"error": "Year parameter is required"}), 400
 
-    filtered = contestants_df[contestants_df['year'] == year]
-    # print(f"Filtered data for year {year}:\n{filtered}")  # Debugging log
+    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
 
     dominating_countries = (
         filtered.groupby('to_country')['points_final']
@@ -29,7 +34,7 @@ def most_dominating_countries():
         .rename(columns={'points_final': 'total_points'})
         .sort_values('total_points', ascending=False)
     )
-    # print(f"Aggregated data:\n{dominating_countries}")  # Debugging log
+    print(f"Aggregated data:\n{dominating_countries}")  # Debugging log
 
     return jsonify(dominating_countries.to_dict(orient='records'))
 
@@ -62,12 +67,13 @@ def yearly_rankings():
 # Endpoint: Word Cloud Data
 @app.route('/api/word_cloud', methods=['GET'])
 def word_cloud():
-    year = request.args.get('year', type=int)
-    if not year:
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+    
+    if not yearRangeStart:
         return jsonify({"error": "Year parameter is required"}), 400
 
-    # Filter songs by the selected year
-    filtered = contestants_df[contestants_df['year'] == year]
+    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
 
     # Combine all lyrics into a single string
     all_lyrics = " ".join(filtered['lyrics_english'].dropna())
@@ -91,12 +97,14 @@ def word_cloud():
 @app.route('/api/countries_in_favor', methods=['GET'])
 def countries_in_favor():
     # Retrieve year from query parameters
-    year = request.args.get('year', type=int)
-    if not year:
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+
+    if not yearRangeEnd:
         return jsonify({"error": "Year parameter is required"}), 400
 
     # Filter votes by the selected year
-    filtered_votes = votes_df[votes_df['year'] == year]
+    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd)]
 
     # Aggregate votes into a matrix: points given by one country to another
     heatmap_data = (

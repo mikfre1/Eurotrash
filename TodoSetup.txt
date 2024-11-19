@@ -10,3 +10,43 @@ pip install python-dotenv
 pip install pandas
 pip install statsmodels
 
+PLAN:
+
+Step 1: exchange the year dropdown to a date range
+- understand how the selected year works and with which components it interacts
+- make a list of the files/components that depend on the selected year / need to be changed
+    FRONTEND
+    --> ConfigurationPanel.vue: 
+            - methods: onYearChange() needs to be adjusted such that it saves start and end year in date range --> this.yearRange works!
+            - v-select needs to be changed to a slider/range --> slider works
+    --> MainContainer.vue:
+            - methods: onYearChanged() needs to be adjusted such that it saves start and end year --> change to yearRangeChanged()
+            - data: needs to return start and end year --> change to return yearRange
+    --> MostDominatingCountries.vue: --> works
+            - props: needs to be adjusted such that it shows start and end year
+            - watch: meeds to be adjusted such that it fetches data for all countries in the selected year range
+            - method: fetchCountryData () needs to fetch all data from the selected years, adjust param
+    --> do the same for the other visual (files)
+
+    BACKEND 
+    --> init.py: /api/most_dominating_countries: return the dominating countries for all the years
+    --> adjust the api calls that are used for the other visuals
+
+- change the selection to a date range slider
+- adjust all the dependant components such that they show the data according to the range and not only one year
+- test the change and adjust until it works
+
+
+
+
+
+
+
+Step 2: add the country selection drop down
+- add the vue component such that it allows a number of different countries to be selected
+- for all widgets: adjust such that it only shows the selected countries
+
+Step 3: add the visual that shows the rankings of the selected countries in the selected years
+    Step 3.1: show the visual for hardcoded years and countries
+    - differentiate between not qualified and made it to the final (summarize rankings for not qualified)
+    Step 3.2: add the dynamically selected countries and years

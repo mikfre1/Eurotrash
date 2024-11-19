@@ -1,6 +1,8 @@
 <template>
     <div>
-        <ConfigurationPanel @year-changed="onYearChanged" />
+        <ConfigurationPanel 
+          @year-range-changed = "onYearRangeChanged"
+        />
 
         
       <!-- Main Content Section -->
@@ -11,12 +13,12 @@
             <!-- Row 1, Widget 1 -->
             <v-card class="widget mb-4">
                 <div class="control-panel-font">Most Dominating Countries</div>
-              <MostDominatingCountries :selectedYear="selectedYear" />
+              <MostDominatingCountries :selectedYearRange="selectedYearRange" />
             </v-card>
             <!-- Row 2, Widget 2 -->
             <v-card class="widget">
               <div class="control-panel-font">Word Cloud</div>
-              <WordCloud :selectedYear="selectedYear" />
+              <WordCloud :selectedYearRange="selectedYearRange" />
             </v-card>
           </v-col>
   
@@ -30,7 +32,7 @@
             <!-- Row 2, Widget 4 -->
             <v-card class="widget">
               <div class="control-panel-font">Voting Matrix</div>
-              <VotingMatrix :selectedYear="selectedYear" :votingData="votingData" />
+              <VotingMatrix :selectedYearRange="selectedYearRange" :votingData="votingData" />
             </v-card>
           </v-col>
   
@@ -47,6 +49,7 @@
   </template>
 
 <script>
+
 import ConfigurationPanel from './ConfigurationPanel.vue';
 import MostDominatingCountries from './MostDominatingCountries.vue';
 import WordCloud from './WordCloud.vue';
@@ -56,15 +59,22 @@ export default {
   components: { ConfigurationPanel, MostDominatingCountries, WordCloud, VotingMatrix},
   data() {
     return {
-      selectedYear: null, // The currently selected year
+      selectedYearRange: null,
     };
   },
   methods: {
-    onYearChanged(year) {
-      this.selectedYear = year; // Update the selected year
+    onYearRangeChanged(yearRange) {
+      this.selectedYearRange = yearRange; // Update the selected year
     },
   },
 };
+
+
+
+
+
+
+
 </script>
   
   <style scoped>
