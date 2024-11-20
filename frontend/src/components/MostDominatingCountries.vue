@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h2>Most Dominating Countries</h2>
     <v-card>
       <!-- World Map -->
       <div id="worldmap" class="world-map"></div>
@@ -27,6 +26,20 @@ export default {
         this.fetchCountryData(); // Fetch new data
       },
     },
+    countryData(newData) {
+    if (this.geoJsonLayer) {
+      this.geoJsonLayer.eachLayer((layer) => {
+        const feature = layer.feature;
+        const country = newData.find(
+          (c) => c.to_country.trim().toLowerCase() === feature.properties.name.trim().toLowerCase()
+        );
+        const count = country ? country.total_points : "No data available";
+        layer.bindPopup(
+          `<strong>${feature.properties.name}</strong><br>Total Points: ${count}`
+        );
+      });
+    }
+  }
   },
   mounted() {
     this.initializeMap();
@@ -120,10 +133,11 @@ export default {
     },
     onEachFeature(feature, layer) {
       // Add a popup for each country
+      console.log(feature.properties.name)
       const country = this.countryData.find(
         (c) => c.to_country === feature.properties.name
       );
-      const count = country ? country.total_points : 0;
+      const count = country ? country.total_points : "undefined";
       layer.bindPopup(
         `<strong>${feature.properties.name}</strong><br>Total Points: ${count}`
       );
