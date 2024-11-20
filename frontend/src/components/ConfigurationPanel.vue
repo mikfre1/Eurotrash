@@ -29,7 +29,7 @@
             </div>
 
 
-            <!-- View Selector -->
+            <!-- View Selector 
             <v-select
               :items="views"
               label="View"
@@ -37,9 +37,9 @@
               outlined
               class="selector"
               v-model="selectedView"
-            ></v-select>
+            ></v-select>-->
 
-            <!-- Country Selector -->
+            <!-- Country Selector 
             <v-select
               :items="countries"
               label="Country"
@@ -47,7 +47,7 @@
               outlined
               class="selector"
               v-model="selectedCountry"
-            ></v-select>
+            ></v-select>-->
           </div>
         </v-col>
       </v-row>
