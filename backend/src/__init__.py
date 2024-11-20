@@ -45,23 +45,28 @@ def get_available_years():
     years.sort(reverse=True)  # Optional: Sort years in descending order
     return jsonify(years)
 
-# Endpoint: Yearly Rankings
+# Endpoint: Yearly Rankings (ranking 0 = not participated)
 @app.route('/api/yearly_rankings', methods=['GET'])
 def yearly_rankings():
     # Filter by year if provided
-    year = request.args.get('year', default=None, type=int)
-    if year:
-        filtered = contestants_df[contestants_df['year'] == year]
-    else:
-        filtered = contestants_df
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+
+    if not yearRangeStart:
+        return jsonify({"error": "Year parameter is required"}), 400
+
+
+    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)] 
 
     yearly_rankings = (
-        filtered.groupby(['year', 'to_country'])
-        .size()
-        .reset_index(name='count')
-        .pivot(index='year', columns='to_country', values='count')
-        .fillna(0)
+        filtered.groupby(['year', 'to_country'])['place_contest']
+        .min()  # If there are multiple entries per country per year, take the best rank (smallest value)
+        .reset_index()
+        .pivot(index='year', columns='to_country', values='place_contest')
+        .fillna(0)  # Fill NaN values with 0 to indicate no participation
+        .astype(int)  # Convert rankings to integers
     )
+
     return jsonify(yearly_rankings.to_dict())
 
 # Endpoint: Word Cloud Data

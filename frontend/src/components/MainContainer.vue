@@ -23,11 +23,11 @@
           </v-col>
   
           <!-- Column 2 -->
-          <v-col cols="12" md="4" class="full-height">
+          <v-col cols="12" md="8" class="full-height">
             <!-- Row 1, Widget 3 -->
             <v-card class="widget mb-4">
-              <div class="control-panel-font">Widget 3 Title</div>
-              <div class="widget-placeholder">Placeholder for Widget 3</div>
+              <div class="control-panel-font" style = "margin-left: 20px;">Ranking Comparison</div>
+              <RankingComparison :selectedYearRange="selectedYearRange" class="line-graph-container" />
             </v-card>
             <!-- Row 2, Widget 4 -->
             <v-card class="widget">
@@ -54,9 +54,10 @@ import ConfigurationPanel from './ConfigurationPanel.vue';
 import MostDominatingCountries from './MostDominatingCountries.vue';
 import WordCloud from './WordCloud.vue';
 import VotingMatrix from './VotingMatrix.vue';
+import RankingComparison from './RankingComparison.vue';
 
 export default {
-  components: { ConfigurationPanel, MostDominatingCountries, WordCloud, VotingMatrix},
+  components: { ConfigurationPanel, MostDominatingCountries, WordCloud, VotingMatrix, RankingComparison},
   data() {
     return {
       selectedYearRange: null,
@@ -112,5 +113,10 @@ export default {
     color: #888;
     height: 100%;
   }
+
+  .line-graph-container {
+    padding-right: 1px; /* Add padding inside the card */
+  }
+
   </style>
   
