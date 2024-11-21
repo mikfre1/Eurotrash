@@ -11,6 +11,8 @@ CORS(app)
 # Load datasets
 contestants_df = pd.read_csv('../dataset/contestants_cleaned.csv')
 votes_df = pd.read_csv('../dataset/votes_cleaned.csv')
+country_df = pd.read_csv('../dataset/country_mapping_iso.csv')
+country_df['Code'] = country_df['Code'].str.lower()
 
 
 # Endpoint: Most Dominating Countries
@@ -28,10 +30,10 @@ def most_dominating_countries():
     filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
 
     dominating_countries = (
-        filtered.groupby('to_country')['points_final']
+        filtered.groupby('to_country')['per_of_pot_max']
         .sum()
         .reset_index()
-        .rename(columns={'points_final': 'total_points'})
+        .rename(columns={'per_of_pot_max': 'total_points'})
         .sort_values('total_points', ascending=False)
     )
     print(f"Aggregated data:\n{dominating_countries}")  # Debugging log
@@ -108,16 +110,19 @@ def countries_in_favor():
     if not yearRangeEnd:
         return jsonify({"error": "Year parameter is required"}), 400
 
+    # Load country names and codes
+    code_to_name = dict(zip(country_df["Code"], country_df["Name"]))
+
     # Filter votes by the selected year
     filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd)]
 
     # Aggregate votes into a matrix: points given by one country to another
     heatmap_data = (
-        filtered_votes.groupby(['from_country_id', 'to_country_id'])['total_points']
+        filtered_votes.groupby(['from_country_id', 'to_country_id'])['perc_of_max']
         .sum()
         .reset_index(name='vote_count')  # Summing the points exchanged
     )
-    
+
     # Ensure all combinations are represented (even if some have zero points)
     all_countries = sorted(
         set(filtered_votes['from_country_id']) | set(filtered_votes['to_country_id'])
@@ -127,13 +132,19 @@ def countries_in_favor():
     for _, row in heatmap_data.iterrows():
         heatmap_matrix.at[row['from_country_id'], row['to_country_id']] = row['vote_count']
 
+    # Replace codes with names for rows and columns
+    heatmap_matrix.index = heatmap_matrix.index.map(code_to_name)
+    heatmap_matrix.columns = heatmap_matrix.columns.map(code_to_name)
+    all_countries_names = [code_to_name.get(code, f"Unknown ({code})") for code in all_countries]
+
     # Convert to JSON-friendly format
     heatmap_response = {
-        "countries": all_countries,
+        "countries": all_countries_names,
         "matrix": heatmap_matrix.values.tolist(),
     }
 
     return jsonify(heatmap_response)
+
 
 # Endpoint: Songs List
 @app.route('/api/songs_list', methods=['GET'])
