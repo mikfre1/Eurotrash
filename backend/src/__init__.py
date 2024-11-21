@@ -81,7 +81,7 @@ def word_cloud():
     filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
 
     # Combine all lyrics into a single string
-    all_lyrics = " ".join(filtered['lyrics_english'].dropna())
+    all_lyrics = " ".join(filtered['lyrics_token'].dropna())
 
     # Preprocess lyrics: remove non-alphanumeric characters and convert to lowercase
     processed_lyrics = re.sub(r'[^a-zA-Z\s]', '', all_lyrics).lower()
