@@ -22,8 +22,7 @@ country_df['Code'] = country_df['Code'].str.lower()
 def most_dominating_countries():
     yearRangeStart = request.args.get('yearRangeStart', type=int)
     yearRangeEnd = request.args.get('yearRangeEnd', type=int)
-    print(yearRangeStart)
-    print(yearRangeEnd)
+
     if not yearRangeStart:
         return jsonify({"error": "Year parameter is required"}), 400
 
@@ -36,7 +35,6 @@ def most_dominating_countries():
         .rename(columns={'per_of_pot_max': 'total_points'})
         .sort_values('total_points', ascending=False)
     )
-    print(f"Aggregated data:\n{dominating_countries}")  # Debugging log
 
     return jsonify(dominating_countries.to_dict(orient='records'))
 
@@ -92,11 +90,10 @@ def word_cloud():
     word_counts = Counter(processed_lyrics.split())
 
     # Get the 15 most common words
-    common_words = word_counts.most_common(15)
+    common_words = word_counts.most_common(30)
 
     # Convert to JSON format
     word_cloud_data = [{"word": word, "count": count} for word, count in common_words]
-    print(word_cloud_data)
 
     return jsonify(word_cloud_data)
 

@@ -62,7 +62,7 @@
     return;
   }
 
-  const zoomOutFactor = 0.0; // Zoom out by 20%
+  const zoomOutFactor = 0.0;
 
   // Calculate the default range for x and y axes
   const xRange = [-0.5, this.countries.length - 0.5];
@@ -93,16 +93,17 @@
   const layout = {
     xaxis: {
       title: "To Country",
-      tickangle: -90, // Rotate x-axis labels for better fit
+      tickangle: -45, // Rotate x-axis labels for better fit
       range: zoomedXRange, // Apply the zoomed-out range
     },
     yaxis: {
       title: "From Country",
+      tickangle: -45,
       range: zoomedYRange, // Apply the zoomed-out range
     },
     margin: {
       t: 0, // Top margin
-      l: 50, // Left margin
+      l: 200, // Left margin
       r: 0, // Right margin
       b: 275, // Bottom margin (increased for x-axis labels)
     },
@@ -118,7 +119,7 @@
   <style>
   #heatmap {
     width: 100%;
-    height: 500px;
+    height: 700px;
   }
   </style>
   

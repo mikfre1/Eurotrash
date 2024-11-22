@@ -42,7 +42,9 @@ export default {
   }
   },
   mounted() {
-    this.initializeMap();
+    this.$nextTick(() => {
+      this.initializeMap();
+    });
     this.fetchCountryData();
   },
   methods: {
@@ -148,7 +150,7 @@ export default {
 
 <style scoped>
 .world-map {
-  height: 400px;
+  height: 800px;
   width: 100%;
 }
 </style>

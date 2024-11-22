@@ -58,20 +58,20 @@ export default {
 
       // Clear any existing SVG
       const svg = d3.select("#wordcloud").html("").append("svg")
-        .attr("width", 375) // Adjust width to fit the container
-        .attr("height", 300); // Adjust height to fit the container
+        .attr("width", 900) // Adjust width to fit the container
+        .attr("height", 600); // Adjust height to fit the container
 
       // Map the word data to D3 format
       const words = this.wordData.map((d) => ({
         text: d.word,
-        size: 7*(Math.sqrt(d.count) * 5) / (this.selectedYearRange[1] - this.selectedYearRange[0]), // Scale the size (adjust as needed)
+        size: 7*(Math.sqrt(d.count) * 20) / (this.selectedYearRange[1] - this.selectedYearRange[0]), // Scale the size (adjust as needed)
       }));
 
       // Debugging log
       console.log("Mapped Words for Word Cloud:", words);
 
       const layout = cloud()
-        .size([375, 300]) // Match the SVG size
+        .size([900, 600]) // Match the SVG size
         .words(words) // Use the mapped words
         .padding(5) // Space between words
         .rotate(() => (Math.random() > 0.5 ? 0 : 90)) // Random rotation for variety
@@ -116,8 +116,8 @@ export default {
 
 <style scoped>
 .word-cloud {
-  height: 300px; /* Match the SVG height */
-  width: 375px; /* Match the SVG width */
+  height: 600px; /* Match the SVG height */
+  width: 850px; /* Match the SVG width */
   margin: auto; /* Center the word cloud */
   display: flex;
   align-items: center;

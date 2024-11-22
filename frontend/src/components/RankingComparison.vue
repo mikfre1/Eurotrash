@@ -97,8 +97,8 @@ export default {
 
         // Set dimensions and margins
         const margin = { top: 60, right: 50, bottom: 50, left: 50 };
-        const width = 800 - margin.left - margin.right;
-        const height = 400 - margin.top - margin.bottom;
+        const width = 1600 - margin.left - margin.right;
+        const height = 500 - margin.top - margin.bottom;
 
         // Append the SVG element to the container
         const svg = d3
@@ -261,7 +261,7 @@ export default {
 
   .line-graph-container {
   width: 100%; /* Full width of the card */
-  height: 400px; /* Adjust height as needed */
+  height: 700px; /* Adjust height as needed */
   position: relative;
   margin: 20px auto;
 }

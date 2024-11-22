@@ -3,6 +3,8 @@
         <ConfigurationPanel 
           @year-range-changed = "onYearRangeChanged"
         />
+        <CountryCompositionDisclaimer/>
+
 
         
       <!-- Main Content Section -->
@@ -55,9 +57,10 @@ import MostDominatingCountries from './MostDominatingCountries.vue';
 import WordCloud from './WordCloud.vue';
 import VotingMatrix from './VotingMatrix.vue';
 import RankingComparison from './RankingComparison.vue';
+import CountryCompositionDisclaimer from './CountryCompositionDisclaimer.vue';
 
 export default {
-  components: { ConfigurationPanel, MostDominatingCountries, WordCloud, VotingMatrix, RankingComparison},
+  components: { ConfigurationPanel, CountryCompositionDisclaimer, MostDominatingCountries, WordCloud, VotingMatrix, RankingComparison},
   data() {
     return {
       selectedYearRange: null,
