@@ -4,6 +4,7 @@ import pandas as pd
 from collections import Counter
 import re
 
+import requests
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
@@ -39,7 +40,6 @@ def most_dominating_countries():
         .rename(columns={'per_of_pot_max': 'total_points'})
         .sort_values('total_points', ascending=False)
     )
-
     return jsonify(dominating_countries.to_dict(orient='records'))
 
 # Endpoint: Get all available years from dataset
@@ -83,6 +83,78 @@ def word_cloud():
         return jsonify({"error": "Year parameter is required"}), 400
 
     filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
+
+    # Combine all lyrics into a single string
+    all_lyrics = " ".join(filtered['lyrics_token'].dropna())
+
+    # Preprocess lyrics: remove non-alphanumeric characters and convert to lowercase
+    processed_lyrics = re.sub(r'[^a-zA-Z\s]', '', all_lyrics).lower()
+
+    # Split into words and count occurrences
+    word_counts = Counter(processed_lyrics.split())
+
+    # Get the 15 most common words
+    common_words = word_counts.most_common(30)
+
+    # Convert to JSON format
+    word_cloud_data = [{"word": word, "count": count} for word, count in common_words]
+
+    return jsonify(word_cloud_data)
+
+# Endpoint with filtered countries
+# To Do:
+# - finish logic here as specified below
+# - add dropdown in frontend
+# - add watcher in dropdown that saves the selected filter (default = All)
+# - pass it as a param and get the correct data returned, rest stays the same
+@app.route('/api/word_cloud_filter', methods=['GET'])
+def word_cloud_filter():
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+    selectedFilter = request.args.get('filter', type=str)
+    print(selectedFilter)
+    if not yearRangeStart:
+        return jsonify({"error": "Year parameter is required"}), 400
+    
+    if selectedFilter == "All":
+        filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
+
+    if selectedFilter == "Top 5":
+        # find the top 5 countries by calling mostdomcountries here and save in topFiveCountries
+        response = requests.get(
+                "http://127.0.0.1:5000/api/most_dominating_countries",
+                params={"yearRangeStart": yearRangeStart, "yearRangeEnd": yearRangeEnd},
+        )
+        
+        dominating_countries = response.json()
+        print(dominating_countries)
+        topFiveCountries = [item['to_country'] for item in dominating_countries[:5]]
+
+        filtered = contestants_df[
+        (contestants_df['year'] >= yearRangeStart) &
+        (contestants_df['year'] <= yearRangeEnd) &
+        (contestants_df['to_country'].isin(topFiveCountries))     
+        ]
+
+    if selectedFilter == "Worst 5":
+         # find the worst 5 countries by calling mostdomcountries here and save in worstFiveCountries
+
+        response = requests.get(
+            "http://127.0.0.1:5000/api/most_dominating_countries",
+            params={"yearRangeStart": yearRangeStart, "yearRangeEnd": yearRangeEnd},
+        )
+
+        print(response)
+        
+        dominating_countries = response.json()
+        worstFiveCountries = [item['to_country'] for item in dominating_countries[-5:]]
+
+        filtered = contestants_df[
+        (contestants_df['year'] >= yearRangeStart) &
+        (contestants_df['year'] <= yearRangeEnd) &
+        (contestants_df['to_country'].isin(worstFiveCountries))     
+        ]
+
 
     # Combine all lyrics into a single string
     all_lyrics = " ".join(filtered['lyrics_token'].dropna())
@@ -180,6 +252,7 @@ def voting_clusters():
     # Get year range from the request
     yearRangeStart = request.args.get('yearRangeStart', type=int)
     yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+    numberOfClusters = request.args.get('numberOfClusters', type=int)
 
     if not yearRangeStart or not yearRangeEnd:
         return jsonify({"error": "Year range parameters are required"}), 400
@@ -201,7 +274,7 @@ def voting_clusters():
     voting_matrix_2d = pca.fit_transform(voting_matrix)
 
     # Apply K-Means clustering (you can adjust the number of clusters)
-    kmeans = KMeans(n_clusters=5, random_state=42)
+    kmeans = KMeans(n_clusters=numberOfClusters, random_state=42)
     clusters = kmeans.fit_predict(voting_matrix)
 
     # Prepare data for visualization
@@ -222,7 +295,7 @@ def voting_clusters_fullName():
     # Get year range from the request
     yearRangeStart = request.args.get('yearRangeStart', type=int)
     yearRangeEnd = request.args.get('yearRangeEnd', type=int)
-    numbersOfClusters = request.args.get('numbersOfClusters', type=int)
+    numberOfClusters = request.args.get('numberOfClusters', type=int)
 
     if not yearRangeStart or not yearRangeEnd:
         return jsonify({"error": "Year range parameters are required"}), 400
@@ -244,7 +317,7 @@ def voting_clusters_fullName():
     voting_matrix_2d = pca.fit_transform(voting_matrix)
 
     # Apply K-Means clustering (you can adjust the number of clusters)
-    kmeans = KMeans(n_clusters=5, random_state=42)
+    kmeans = KMeans(n_clusters=numberOfClusters, random_state=42)
     clusters = kmeans.fit_predict(voting_matrix)
 
     # Use the existing `country_df` and its dictionary mapping

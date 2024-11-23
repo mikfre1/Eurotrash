@@ -1,6 +1,17 @@
 <template>
   <div>
     <v-card>
+      <v-card-title>
+        <!-- Dropdown for selecting country filter -->
+        <v-select
+          :items="['All', 'Top 5', 'Worst 5']"
+          label="Country Filter"
+          v-model="selectedFilter"
+          outlined
+          dense
+          class="dropdown"
+        />
+      </v-card-title>
       <!-- Word Cloud Visualization -->
       <div id="wordcloud" class="word-cloud"></div>
     </v-card>
@@ -13,28 +24,36 @@ import * as d3 from "d3";
 import cloud from "d3-cloud";
 
 export default {
-  props: ["selectedYearRange"], // Receive the selected year as a prop
+  props: ["selectedYearRange"], // Receive the selected year range as a prop
   data() {
     return {
       wordData: [], // Stores word-frequency data
+      selectedFilter: "All", // Default filter value
     };
   },
   watch: {
     selectedYearRange: {
       immediate: true, // Fetch data immediately on load
       handler() {
-        this.fetchWordCloudData(); // Fetch data when the year changes
+        this.fetchWordCloudData(); // Fetch data when the year range changes
+      },
+    },
+    selectedFilter: {
+      immediate: true, // React to filter changes
+      handler() {
+        this.fetchWordCloudData(); // Re-fetch data with the updated filter
       },
     },
   },
   methods: {
     async fetchWordCloudData() {
       try {
-        console.log("Fetching word cloud data for year:", this.selectedYearRange);
-        const response = await axios.get("http://127.0.0.1:5000/api/word_cloud", {
+        console.log("Fetching word cloud data for year:", this.selectedYearRange, "with filter:", this.selectedFilter);
+        const response = await axios.get("http://127.0.0.1:5000/api/word_cloud_filter", {
           params: { 
             yearRangeStart: this.selectedYearRange[0],
-            yearRangeEnd: this.selectedYearRange[1]
+            yearRangeEnd: this.selectedYearRange[1],
+            filter: this.selectedFilter, // Pass the selected filter
           },
         });
         this.wordData = response.data;
@@ -54,7 +73,6 @@ export default {
     },
     renderWordCloud() {
       console.log("Rendering Word Cloud...");
-      
 
       // Clear any existing SVG
       const svg = d3.select("#wordcloud").html("").append("svg")
@@ -64,7 +82,7 @@ export default {
       // Map the word data to D3 format
       const words = this.wordData.map((d) => ({
         text: d.word,
-        size: 7*(Math.sqrt(d.count) * 20) / (this.selectedYearRange[1] - this.selectedYearRange[0]), // Scale the size (adjust as needed)
+        size: 7 * (Math.sqrt(d.count) * 20) / (this.selectedYearRange[1] - this.selectedYearRange[0]), // Scale the size
       }));
 
       // Debugging log
@@ -75,9 +93,9 @@ export default {
         .words(words) // Use the mapped words
         .padding(5) // Space between words
         .rotate(() => (Math.random() > 0.5 ? 0 : 90)) // Random rotation for variety
-        .fontSize((d) => d.size) // Font size based on scaled count
+        .fontSize((d) => d.size) // Font size based on data
         .on("end", (words) => {
-          console.log("Word Cloud Layout Complete:", words); // Debugging log
+          console.log("Word Cloud Layout Complete:", words);
           this.drawWordCloud(words, svg);
         });
 
@@ -109,7 +127,7 @@ export default {
           .text((d) => d.text);
 
       console.log("Words successfully drawn");
-      },
+    },
   },
 };
 </script>
@@ -124,6 +142,9 @@ export default {
   justify-content: center;
   background-color: #f9f9f9; /* Light background for visibility */
 }
+
+.dropdown {
+  width: 200px;
+  margin-bottom: 16px;
+}
 </style>
-
-

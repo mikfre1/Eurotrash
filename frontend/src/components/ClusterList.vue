@@ -22,29 +22,43 @@
   import axios from "axios";
   
   export default {
-    props: ["selectedYearRange"], // Accept year range as a prop
+    props: ["selectedYearRange", "numberOfClusters"], // Accept year range as a prop
     data() {
       return {
         clusterData: [], // Store raw cluster data from the backend
         groupedClusters: {}, // Store grouped clusters for display
       };
     },
-    watch: {
-      selectedYearRange: {
-        immediate: true, // Fetch data immediately when the component loads
-        handler() {
-          this.fetchClusterData();
-        },
-      },
+
+    mounted() {
+        // Trigger the API call on component load
+        console.log("ClusterList mounted with numberOfClusters:", this.numberOfClusters);
+        this.fetchClusterData();
     },
+
+    watch: {
+        selectedYearRange: {
+            immediate: true, // React immediately on component load
+            handler() {
+            this.fetchClusterData();
+            },
+        },
+        numberOfClusters: {
+            immediate: true, // React immediately to numberOfClusters changes
+            handler(newCount) {
+            console.log("Number of clusters updated in ClusterList:", newCount);
+            this.fetchClusterData(newCount); // Fetch updated cluster data
+            },
+        },
+        },
     methods: {
-      async fetchClusterData() {
+      async fetchClusterData(newCount) {
         try {
           const response = await axios.get("http://127.0.0.1:5000/api/voting_clusters_fullname", {
             params: {
               yearRangeStart: this.selectedYearRange[0],
               yearRangeEnd: this.selectedYearRange[1],
-              numbersOfClusters: this.selectedNumbersOfClusters
+              numberOfClusters: newCount,
             },
           });
           this.clusterData = response.data;

@@ -57,6 +57,8 @@ export default {
           },
         });
         this.countryData = response.data;
+      
+
         this.updateMap(); // Update map with new data
       } catch (error) {
         console.error("Error fetching country data:", error);

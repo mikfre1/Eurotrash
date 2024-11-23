@@ -45,16 +45,21 @@
         <v-col cols="8">
           <v-card class="widget h-100">
             <div class="control-panel-font">Voting Clusters</div>
-            <VotingClusters :selectedYearRange="selectedYearRange" />
+            <VotingClusters
+              :selectedYearRange="selectedYearRange" 
+              @cluster-count-updated="updateClusterCount"/>
           </v-card>
         </v-col>
         
         <!-- New Card -->
         <v-col cols="4">
-          <v-card style="height: 655px; overflow-y: auto;">
+          <v-card style="height: 750px; overflow-y: auto;">
             <div class="control-panel-font">Voting Clusters List</div>
             <!-- Replace the following with your actual component -->
-            <ClusterList :selectedYearRange="selectedYearRange" />
+            <ClusterList 
+              :selectedYearRange="selectedYearRange"
+              :numberOfClusters="numberOfClusters" 
+            />
           </v-card>
         </v-col>
       </v-row>
@@ -81,12 +86,16 @@ export default {
   data() {
     return {
       selectedYearRange: null,
+      numberOfClusters: 5,
     };
   },
   methods: {
     onYearRangeChanged(yearRange) {
       this.selectedYearRange = yearRange; // Update the selected year
     },
+    updateClusterCount(newCount) {
+    this.numberOfClusters = newCount; // Update the number of clusters
+  },
   },
 };
 
