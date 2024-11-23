@@ -4,6 +4,9 @@ import pandas as pd
 from collections import Counter
 import re
 
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +16,7 @@ contestants_df = pd.read_csv('../dataset/contestants_cleaned.csv')
 votes_df = pd.read_csv('../dataset/votes_cleaned.csv')
 country_df = pd.read_csv('../dataset/country_mapping_iso.csv')
 country_df['Code'] = country_df['Code'].str.lower()
+
 
 
 # Endpoint: Most Dominating Countries
@@ -169,6 +173,99 @@ def song_details():
 
     song_details = contestants_df[contestants_df['song'] == song_name].to_dict(orient='records')
     return jsonify(song_details[0] if song_details else {'error': 'Song not found'})
+
+
+@app.route('/api/voting_clusters', methods=['GET'])
+def voting_clusters():
+    # Get year range from the request
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+
+    if not yearRangeStart or not yearRangeEnd:
+        return jsonify({"error": "Year range parameters are required"}), 400
+
+    # Filter the voting data based on the selected year range
+    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd)]
+
+    # Pivot table to create the voting matrix
+    voting_matrix = filtered_votes.pivot_table(
+        index='from_country_id',
+        columns='to_country_id',
+        values='perc_of_max',  # Replace with your relevant value column
+        aggfunc='sum',
+        fill_value=0
+    )
+
+    # Reduce dimensions using PCA
+    pca = PCA(n_components=2)
+    voting_matrix_2d = pca.fit_transform(voting_matrix)
+
+    # Apply K-Means clustering (you can adjust the number of clusters)
+    kmeans = KMeans(n_clusters=5, random_state=42)
+    clusters = kmeans.fit_predict(voting_matrix)
+
+    # Prepare data for visualization
+    cluster_data = [
+        {
+            "country": country,
+            "x": float(voting_matrix_2d[i, 0]),  # PCA Component 1
+            "y": float(voting_matrix_2d[i, 1]),  # PCA Component 2
+            "cluster": int(clusters[i])  # Cluster ID
+        }
+        for i, country in enumerate(voting_matrix.index)
+    ]
+
+    return jsonify(cluster_data)
+
+@app.route('/api/voting_clusters_fullname', methods=['GET'])
+def voting_clusters_fullName():
+    # Get year range from the request
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+    numbersOfClusters = request.args.get('numbersOfClusters', type=int)
+
+    if not yearRangeStart or not yearRangeEnd:
+        return jsonify({"error": "Year range parameters are required"}), 400
+
+    # Filter the voting data based on the selected year range
+    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd)]
+
+    # Pivot table to create the voting matrix
+    voting_matrix = filtered_votes.pivot_table(
+        index='from_country_id',
+        columns='to_country_id',
+        values='perc_of_max',  # Replace with your relevant value column
+        aggfunc='sum',
+        fill_value=0
+    )
+
+    # Reduce dimensions using PCA
+    pca = PCA(n_components=2)
+    voting_matrix_2d = pca.fit_transform(voting_matrix)
+
+    # Apply K-Means clustering (you can adjust the number of clusters)
+    kmeans = KMeans(n_clusters=5, random_state=42)
+    clusters = kmeans.fit_predict(voting_matrix)
+
+    # Use the existing `country_df` and its dictionary mapping
+    country_dict = dict(zip(country_df['Code'], country_df['Name']))
+
+    # Prepare data for visualization
+    cluster_data = [
+        {
+            "country": country_dict.get(country.lower(), country),  # Convert abbreviation to full name
+            "x": float(voting_matrix_2d[i, 0]),  # PCA Component 1
+            "y": float(voting_matrix_2d[i, 1]),  # PCA Component 2
+            "cluster": int(clusters[i])  # Cluster ID
+        }
+        for i, country in enumerate(voting_matrix.index)
+    ]
+
+    return jsonify(cluster_data)
+
+
+
+
 
 # Run Flask app
 if __name__ == '__main__':

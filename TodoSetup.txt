@@ -13,15 +13,22 @@ pip install statsmodels
 
 
 
+CLUSTER: 
+- add full names of countries / list  2
+- add selection of numbers of clusters 1
+
+WORD CLOUD
+- add selection for all countries, top 5 and worst 5 countries (on average) 3
+
+LINE GRAPH:
+- add selection for Top 5 countries (on average) in addition to individual countries 4
+- adjust the shown years in a better format without '
+
+
+Good selections for voting clsuters:
+1999 - 2022 --> cluster 1 scandinavian countries
+1971 - 2022 --> cluster 3 east european countries, cluster 5 west european countries (often the case in general)
+in general --> germany and france often in same cluster
 
 
 
-
-Step 2: add the country selection drop down
-- add the vue component such that it allows a number of different countries to be selected
-- for all widgets: adjust such that it only shows the selected countries
-
-Step 3: add the visual that shows the rankings of the selected countries in the selected years
-    Step 3.1: show the visual for hardcoded years and countries
-    - differentiate between not qualified and made it to the final (summarize rankings for not qualified)
-    Step 3.2: add the dynamically selected countries and years

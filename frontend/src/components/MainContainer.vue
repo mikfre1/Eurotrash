@@ -9,44 +9,59 @@
         
       <!-- Main Content Section -->
       <v-container fluid class="full-height">
-        <v-row class="full-height">
-          <!-- Column 1 -->
-          <v-col cols="12" md="4" class="full-height">
-            <!-- Row 1, Widget 1 -->
-            <v-card class="widget mb-4">
-                <div class="control-panel-font">Most Dominating Countries</div>
-              <MostDominatingCountries :selectedYearRange="selectedYearRange" />
-            </v-card>
-            <!-- Row 2, Widget 2 -->
-            <v-card class="widget">
-              <div class="control-panel-font">Word Cloud</div>
-              <WordCloud :selectedYearRange="selectedYearRange" />
-            </v-card>
-          </v-col>
-  
-          <!-- Column 2 -->
-          <v-col cols="12" md="8" class="full-height">
-            <!-- Row 1, Widget 3 -->
-            <v-card class="widget mb-4">
-              <div class="control-panel-font" style = "margin-left: 20px;">Ranking Comparison</div>
-              <RankingComparison :selectedYearRange="selectedYearRange" class="line-graph-container" />
-            </v-card>
-            <!-- Row 2, Widget 4 -->
-            <v-card class="widget">
-              <div class="control-panel-font">Voting Matrix</div>
-              <VotingMatrix :selectedYearRange="selectedYearRange" :votingData="votingData" />
-            </v-card>
-          </v-col>
-  
-          <!-- Column 3 (spans two rows) -->
-          <v-col cols="12" md="4" class="full-height">
-            <v-card class="widget h-100">
-              <div class="control-panel-font">Widget 5 Title</div>
-              <div class="widget-placeholder h-100">Placeholder for Widget 5</div>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-container>
+  <v-row class="full-height">
+    <!-- Column 1 -->
+    <v-col cols="12" md="4" class="full-height">
+      <!-- Row 1, Widget 1 -->
+      <v-card class="widget mb-4">
+        <div class="control-panel-font">Most Dominating Countries</div>
+        <MostDominatingCountries :selectedYearRange="selectedYearRange" />
+      </v-card>
+      <!-- Row 2, Widget 2 -->
+      <v-card class="widget">
+        <div class="control-panel-font">Word Cloud</div>
+        <WordCloud :selectedYearRange="selectedYearRange" />
+      </v-card>
+    </v-col>
+
+    <!-- Column 2 -->
+    <v-col cols="12" md="8" class="full-height">
+      <!-- Row 1, Widget 3 -->
+      <v-card class="widget mb-4">
+        <div class="control-panel-font" style="margin-left: 20px;">Ranking Comparison</div>
+        <RankingComparison :selectedYearRange="selectedYearRange" class="line-graph-container" />
+      </v-card>
+      <!-- Row 2, Widget 4 -->
+      <v-card class="widget">
+        <div class="control-panel-font">Voting Matrix</div>
+        <VotingMatrix :selectedYearRange="selectedYearRange" :votingData="votingData" />
+      </v-card>
+    </v-col>
+
+    <!-- Column 3 (Voting Clusters and new card) -->
+    <v-col cols="12" md="12" class="full-height">
+      <v-row>
+        <!-- Voting Clusters -->
+        <v-col cols="8">
+          <v-card class="widget h-100">
+            <div class="control-panel-font">Voting Clusters</div>
+            <VotingClusters :selectedYearRange="selectedYearRange" />
+          </v-card>
+        </v-col>
+        
+        <!-- New Card -->
+        <v-col cols="4">
+          <v-card style="height: 655px; overflow-y: auto;">
+            <div class="control-panel-font">Voting Clusters List</div>
+            <!-- Replace the following with your actual component -->
+            <ClusterList :selectedYearRange="selectedYearRange" />
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-col>
+  </v-row>
+</v-container>
+
     </div>
   </template>
 
@@ -58,9 +73,11 @@ import WordCloud from './WordCloud.vue';
 import VotingMatrix from './VotingMatrix.vue';
 import RankingComparison from './RankingComparison.vue';
 import CountryCompositionDisclaimer from './CountryCompositionDisclaimer.vue';
+import VotingClusters from './VotingClusters.vue';
+import ClusterList from './ClusterList.vue';
 
 export default {
-  components: { ConfigurationPanel, CountryCompositionDisclaimer, MostDominatingCountries, WordCloud, VotingMatrix, RankingComparison},
+  components: { ConfigurationPanel, CountryCompositionDisclaimer, MostDominatingCountries, WordCloud, VotingMatrix, RankingComparison, VotingClusters, ClusterList},
   data() {
     return {
       selectedYearRange: null,
