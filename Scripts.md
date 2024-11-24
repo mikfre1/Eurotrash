@@ -4,7 +4,12 @@
 > Your team name, and the names of all of your group members
 
 EuroTrash<br>
-Marlon, Mike, Max, and Henry
+Marlon, Mike, Max, and Henry<br>
+
+Before we dive into the details, let me introduce our amazing team and the roles each of us played in bringing this project to life.<br>
+Starting with Max and Marlon, they collaborated closely to create the webpage and visualizations. Together, they worked hand-in-hand to ensure the visuals effectively represent our data and findings.<br>
+Next, we have Mike, who took the lead on initial data preprocessing and wrangling. He tackled the foundational steps and prepared the data for deeper analysis. Later, he teamed up with Hyeongseok to refine and enhance the preprocessing results.<br>
+Finally, Hyeongseok not only refined Mike's preprocessing work but also introduced significant improvements to the process. Together, they made sure the data was ready for analysis and visualization
 
 
 ## Nested Model summary
