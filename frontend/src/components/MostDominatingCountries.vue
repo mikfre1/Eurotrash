@@ -95,16 +95,16 @@ export default {
       // Determine color based on the distribution of total_points
       const getColor = (value, thresholds) => {
         return value > thresholds[4]
-          ? "#FF0000" // Bright red for the top tier
+          ? "#4B0082" // Deep indigo (highest tier)
           : value > thresholds[3]
-          ? "#FF4500" // Orange-red
+          ? "#6A0DAD" // Dark purple
           : value > thresholds[2]
-          ? "#FFA500" // Orange
+          ? "#8A2BE2" // Blue-violet
           : value > thresholds[1]
-          ? "#FFFF00" // Yellow
+          ? "#9370DB" // Medium purple
           : value > thresholds[0]
-          ? "#00FF00" // Bright green
-          : "#D3D3D3"; // Light gray for no data
+          ? "#D8BFD8" // Thistle (light purple)
+          : "#D3D3D3"; // Very light purple for no data
       };
 
       // Calculate distribution thresholds dynamically

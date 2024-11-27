@@ -94,15 +94,10 @@ export default {
       this.selectedYearRange = yearRange; // Update the selected year
     },
     updateClusterCount(newCount) {
-    this.numberOfClusters = newCount; // Update the number of clusters
+      this.numberOfClusters = newCount; // Update the number of clusters
   },
   },
 };
-
-
-
-
-
 
 
 </script>

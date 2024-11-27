@@ -40,25 +40,6 @@ export default {
       isCollapsed: false, // Controls whether the list is collapsed
       countryChanges: [
         {
-          startYear: 1960,
-          endYear: null,
-          message: "Many African nations gained independence from colonial powers in 1960, known as the Year of Africa.",
-          countries: {
-            splitFrom: [
-              { name: "France", code: "FR" },
-              { name: "Belgium", code: "BE" },
-              { name: "United Kingdom", code: "GB" }
-            ],
-            splitTo: [
-              { name: "Senegal", code: "SN" },
-              { name: "Ivory Coast", code: "CI" },
-              { name: "Nigeria", code: "NG" },
-              { name: "Congo", code: "CG" },
-              { name: "Chad", code: "TD" }
-            ]
-          }
-        },
-        {
           startYear: 1991,
           endYear: null,
           message: "The Soviet Union dissolved in 1991, leading to the independence of 15 countries.",
@@ -129,15 +110,6 @@ export default {
           countries: {
             splitFrom: [{ name: "Serbia", code: "RS" }],
             splitTo: [{ name: "Kosovo", code: "XK" }]
-          }
-        },
-        {
-          startYear: 2011,
-          endYear: null,
-          message: "South Sudan declared independence from Sudan in 2011 after a long civil war.",
-          countries: {
-            splitFrom: [{ name: "Sudan", code: "SD" }],
-            splitTo: [{ name: "South Sudan", code: "SS" }]
           }
         }
       ]

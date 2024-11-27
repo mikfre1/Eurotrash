@@ -32,15 +32,15 @@
 
     mounted() {
         // Trigger the API call on component load
+        this.fetchClusterData(this.numberOfClusters);
         console.log("ClusterList mounted with numberOfClusters:", this.numberOfClusters);
-        this.fetchClusterData();
     },
 
     watch: {
         selectedYearRange: {
             immediate: true, // React immediately on component load
             handler() {
-            this.fetchClusterData();
+              this.fetchClusterData();
             },
         },
         numberOfClusters: {
@@ -52,7 +52,7 @@
         },
         },
     methods: {
-      async fetchClusterData(newCount) {
+      async fetchClusterData(newCount = this.numberOfClusters || 5) {
         try {
           const response = await axios.get("http://127.0.0.1:5000/api/voting_clusters_fullname", {
             params: {

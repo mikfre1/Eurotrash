@@ -90,7 +90,7 @@ export default {
         .append("circle")
         .attr("cx", (d) => xScale(d.x))
         .attr("cy", (d) => yScale(d.y))
-        .attr("r", 8) // Circle size
+        .attr("r", 12) // Circle size
         .attr("fill", (d) => d3.schemeCategory10[d.cluster % 10]) // Cluster-based color
         .attr("opacity", 0.8);
 
@@ -99,9 +99,9 @@ export default {
         .data(this.clusterData)
         .enter()
         .append("text")
-        .attr("x", (d) => xScale(d.x) + 10) // Offset from circle
+        .attr("x", (d) => xScale(d.x) + 12) // Offset from circle
         .attr("y", (d) => yScale(d.y))
-        .attr("font-size", "12px")
+        .attr("font-size", "20px")
         .attr("fill", "black")
         .text((d) => d.country);
     },
