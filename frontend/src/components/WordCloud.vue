@@ -3,14 +3,14 @@
     <v-card>
       <v-card-title>
         <!-- Dropdown for selecting country filter -->
-        <v-select
+        <!--<v-select
           :items="['All', 'Top 5', 'Worst 5']"
           label="Country Filter"
           v-model="selectedFilter"
           outlined
           dense
           class="dropdown"
-        />
+        />-->
       </v-card-title>
       <!-- Word Cloud Visualization -->
       <div id="wordcloud" class="word-cloud"></div>
@@ -74,8 +74,9 @@ export default {
     renderWordCloud() {
       console.log("Rendering Word Cloud...");
 
+      // Get the container dimensions dynamically
       const containerWidth = document.getElementById("wordcloud").clientWidth || window.innerWidth;
-      const containerHeight = window.innerHeight * 0.275;
+      const containerHeight = document.getElementById("wordcloud").clientHeight || window.innerHeight * 0.275;
 
       // Clear any existing SVG
       const svg = d3.select("#wordcloud").html("").append("svg")
@@ -85,52 +86,50 @@ export default {
       // Map the word data to D3 format
       const words = this.wordData.map((d) => ({
         text: d.word,
-        size: 7 * (Math.sqrt(d.count) * 10) / (this.selectedYearRange[1] - this.selectedYearRange[0]), // Scale the size
+        size: (Math.sqrt(d.count) * 30) / (this.selectedYearRange[1] - this.selectedYearRange[0] + 1), // Adjust scaling
       }));
 
-      // Debugging log
       console.log("Mapped Words for Word Cloud:", words);
 
       const layout = cloud()
-        .size([containerHeight, containerWidth]) // Match the SVG size
+        .size([containerWidth, containerHeight]) // Match the SVG size
         .words(words) // Use the mapped words
         .padding(5) // Space between words
-        .rotate(() => (Math.random() > 0.5 ? 0 : 90)) // Random rotation for variety
-        .fontSize((d) => d.size) // Font size based on data
+        .rotate(() => Math.random() > 0.5 ? 0 : 90) // Allow for varied rotation angles
+        .fontSize((d) => d.size * 2) // Font size based on data
         .on("end", (words) => {
           console.log("Word Cloud Layout Complete:", words);
-          this.drawWordCloud(words, svg);
+          this.drawWordCloud(words, svg, containerWidth, containerHeight);
         });
 
       layout.start();
     },
-    drawWordCloud(words, svg) {
+
+    drawWordCloud(words, svg, containerWidth, containerHeight) {
       console.log("Drawing Words:", words);
 
-      // Get the SVG dimensions
-      const svgWidth = parseInt(svg.attr("width"));
-      const svgHeight = parseInt(svg.attr("height"));
+      // Calculate the center of the container
+      const centerX = containerWidth / 2;
+      const centerY = containerHeight / 2;
 
-      // Dynamically calculate the center of the SVG
-      const centerX = svgWidth / 2;
-      const centerY = svgHeight / 2;
-
-      // Append and center the word cloud
+      // Create a group element and center it
       const g = svg.append("g")
-          .attr("transform", `translate(${centerX},${centerY})`); // Center dynamically
+        .attr("transform", `translate(${centerX},${centerY})`);
 
+      // Add words to the visualization
       g.selectAll("text")
-          .data(words)
-          .enter().append("text")
-          .style("font-size", (d) => `${d.size}px`)
-          .style("fill", () => d3.schemeCategory10[Math.floor(Math.random() * 10)]) // Random colors
-          .style("stroke", "black") // Add stroke for better visibility
-          .attr("text-anchor", "middle")
-          .attr("transform", (d) => `translate(${d.x},${d.y})rotate(${d.rotate})`)
-          .text((d) => d.text);
+        .data(words)
+        .enter().append("text")
+        .style("font-size", (d) => `${d.size}px`)
+        .style("fill", () => d3.schemeCategory10[Math.floor(Math.random() * 10)]) // Random colors
+        .style("stroke", "black")
+        .attr("text-anchor", "middle")
+        .attr("transform", (d) => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+        .text((d) => d.text);
 
       console.log("Words successfully drawn");
     },
+
   },
 };
 </script>
