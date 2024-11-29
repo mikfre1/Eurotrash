@@ -10,34 +10,24 @@ pip install python-dotenv
 pip install pandas
 pip install statsmodels
 
+REWORK LAYOUT STYLING TO DO'S:
+- In general:
+--> add dynamic scaling (I don't know how it looks for your monitors
+)
+- Config Panel
+--> add a divider between year range and page specific selectors (vertical line), s.t.
+we have a general filter part and page specific filter part
 
+- Performance Page:
+--> adjust layout / size and location odf the visuals
+--> match line graph visual to the general theme
+--> match dominating countries to the general theme (already okay imo)
 
+- Voting Pattern Page
+--> move the cluster selector to the left of the config panel (specific page filters part)
+--> add the list to the right of the cluster visual
 
-WORD CLOUD
-- add selection for all countries, top 5 and worst 5 countries (on average) 3
---> add api call that gets top 5 and worst 5 countries on average in a specific year range
-
-LINE GRAPH:
-- add selection for Top 5 countries (on average) in addition to individual countries 4
-- adjust the shown years in a better format without '
-
-Good selection for Ranking Conparison:
-- Switzerland vs Denmark shows good that they are similarily good
-- Switzerland vs Germany is a good use case for rival comparison
-- UK vs Austria shows good that UK is always better
-- UK vs Italy shows good that we don't connect the line when they don't participate to not mislead a user
-
-Good selections for voting clusters:
-1999 - 2022 --> cluster 1 scandinavian countries
-1971 - 2022 --> cluster 3 east european countries, cluster 5 west european countries (often the case in general)
-in general --> germany and france often in same cluster
-Best one: 3 clusters show the western european countries well!!
-Voting list only shows after a number is selected
-In General --> western european countries are always pretty clearly structured (e.g. 3 clusters, 1984 - 2022)
-
-Good selection for Word CLOUD
-- only ALL looks really good
-- Worst 5 you can show to talk about insight, but doesn't look that nice
-- year 1984 - 2006: top 5 includes light and day, worst 5 includes rain and night 
---> might imply singing about good things gives better rankings (interesting insight to talk about imo)
-
+- Fun Page
+--> add page specific filter (left in config panel) that lets a user select regions (western europe etc.)
+--> add bar chart for the words
+--> add a youtube video widget (select a country --> songs show up from the years --> link maps to youtube vid which can be shown inside the UI)

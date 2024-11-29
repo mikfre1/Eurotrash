@@ -1,53 +1,51 @@
 <template>
   <div>
     <v-container fluid class="header">
-      <v-row align="center" justify="space-between">
-        <!-- Title Section -->
-        <v-col cols="12" md="6" class="title-section">
-          <h1 class="header-title">Eurotrash at a Glance</h1>
+      <v-row align="center" justify="space-between" class="full-height">
+        <!-- Country Selector (Left) -->
+        <v-col cols="3" class="selectors-section">
+          <v-card-text>
+            <div v-if="currentPage === 'Performance'">
+              <!-- Show Performance specific configuration -->
+              <v-row class="country-selector">
+                <v-col cols="12">
+                  <v-select
+                    :items="availableCountries"
+                    v-model="selectedCountriesInternal"
+                    label="Select Countries"
+                    dense
+                    outlined
+                    multiple
+                    class="custom-dropdown"
+                    style="width: 100%;" 
+                    @change="(val) => { console.log('Selected:', val); emitSelectedCountries() }"
+                  >
+                  </v-select>
+                </v-col>
+              </v-row>
+            </div>
+          </v-card-text>
+        </v-col>
+        
+        <!-- Vertical Divider -->
+        <v-col cols="1" class="divider-section full-height">
+          <div class="vertical-divider"></div>
         </v-col>
 
-        <!-- Selectors Section -->
-        <v-col cols="12" md="6" class="selectors-section">
-          <div class="selectors">
-          
-            <!-- Year Range Slider -->
-            <div id="year-range-container" class="slider-container">
-              <!-- Year Range Label -->
-              <p id="yearRangeLabel" class="slider-label">
-                Year Range: {{ selectedYearRange[0] }} - {{ selectedYearRange[1] }}
-              </p>
+        <!-- Empty Spacer for Center Alignment -->
+        <v-col cols="1"></v-col>
 
-              <!-- Slider -->
-              <div id="year-range-slider" class="slider"></div>
-
-              <!-- Slider Year Labels -->
-              <div class="slider-year-labels">
-                <span class="slider-start-year">1957</span>
-                <span class="slider-end-year">2022</span>
-              </div>
+        <!-- Year Range Slider (Right) -->
+        <v-col cols="7" class="slider-section">
+          <div id="year-range-container" class="slider-container">
+            <p id="yearRangeLabel" class="slider-label">
+              Year Range: {{ selectedYearRange[0] }} - {{ selectedYearRange[1] }}
+            </p>
+            <div id="year-range-slider" class="slider"></div>
+            <div class="slider-year-labels">
+              <span class="slider-start-year">1957</span>
+              <span class="slider-end-year">2022</span>
             </div>
-
-
-            <!-- View Selector 
-            <v-select
-              :items="views"
-              label="View"
-              dense
-              outlined
-              class="selector"
-              v-model="selectedView"
-            ></v-select>-->
-
-            <!-- Country Selector 
-            <v-select
-              :items="countries"
-              label="Country"
-              dense
-              outlined
-              class="selector"
-              v-model="selectedCountry"
-            ></v-select>-->
           </div>
         </v-col>
       </v-row>
@@ -55,23 +53,50 @@
   </div>
 </template>
 
+
 <script>
 import axios from "axios";
 import noUiSlider from "nouislider";
 import 'nouislider/dist/nouislider.css';
 
 export default {
+  
+  props: ["currentPage", "selectedCountries"], // Receive currentPage as a prop from MainContainer
+
   data() {
     return {
       years: [], // Populate dynamically from backend
       selectedYear: null, // The currently selected year
       selectedYearRange: [null, null], // Year range from the slider
+      availableCountries: ["Sweden", "Norway", "Germany", "France", "Italy"],
+      selectedCountriesInternal: ["Sweden", "Norway"],
     };
   },
   mounted() {
     this.fetchAvailableYears();
+
   },
+
+  watch: {
+    // Sync the internal state with the prop when it changes
+    selectedCountries: {
+      immediate: true,
+      handler(newVal) {
+        this.selectedCountriesInternal = newVal;
+      },
+    },
+
+    selectedCountriesInternal: {
+      deep: true,
+      handler(newVal) {
+        console.log("Watcher triggered: Selected countries updated:", newVal);
+        this.emitSelectedCountries();
+      },
+    },
+  },
+
   methods: {
+
     async fetchAvailableYears() {
       try {
         
@@ -117,11 +142,44 @@ export default {
       this.$emit("yearRangeChanged", this.selectedYearRange); // Emit event to parent
     },
 
+    emitSelectedCountries() {
+      // Emit the selected countries to MainContainer.vue
+      console.log("Emitting selected countries from ConfigPanel to MainContainer:", this.selectedCountriesInternal);
+      this.$emit("update-selected-countries", this.selectedCountriesInternal);
+    },
+
+
   },
 };
 </script>
 
-<style scoped>
+<style>
+
+.noUi-connect {
+  background: #252569; /* Use a color that matches your theme */
+}
+
+/* Customize the handles (circles on the sides) */
+.noUi-handle {
+  background: #222222; /* Match the dark theme */
+  border: 1px groove #5a5ac6; /* Add a highlight effect */
+}
+
+/* Slider track (unselected area) */
+.noUi-base {
+  background: #888888; /* Match your UI */
+}
+
+/* Slider handles on hover */
+.noUi-handle:hover {
+  border-color: #aaaaff; /* Slightly brighter for hover effect */
+}
+
+/* Active handle during dragging */
+.noUi-handle.noUi-active {
+  border-color: #ffffff; /* Highlight active handle */
+}
+
 /* Header Section */
 .header {
   padding: 16px;
@@ -145,6 +203,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  padding-left: 10px;
+}
+
+.full-height {
+  height: 100%;
 }
 
 /* Selectors Styling */
@@ -169,29 +232,45 @@ export default {
 }
 
 .slider-label {
-  margin-bottom: 10px; /* Add space between label and slider */
+  margin-bottom: 10px; /* Space between label and slider */
   font-weight: bold;
-  font-size: 16px;
-  text-align: center;
+  font-size: 16px; /* Adjust font size for better readability */
+  text-align: right;
+  color: white; /* Match the dark theme */
 }
 
 .slider {
-  width: 90%; /* Adjust width as needed */
-  margin: 10px 0; /* Add spacing between slider and year labels */
+  width: 70%; /* Adjust width as needed */
+  margin: 10px 0; /* Add spacing between slider and labels */
+}
+
+.slider-section {
+  margin-left:auto;
+  text-align: right;
 }
 
 .slider-year-labels {
-  width: 90%; /* Match the slider width */
+  width: 50%; /* Match the slider width */
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 14px; /* Adjust font size for labels */
   position: relative;
-  margin-top: -10px; /* Adjust position to align with slider */
+  margin-top: 0px; /* Add more space below the slider */
 }
 
 .slider-start-year,
 .slider-end-year {
   font-weight: bold;
+  color: white; /* Ensure labels match the dark theme */
+  transform: translateY(5px); /* Move the labels slightly downward */
+  font-size: 14px; /* Keep the labels legible */
+}
+
+
+.country-selector {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
 }
 
 
@@ -201,5 +280,18 @@ export default {
   font-weight: bold;
   margin: 0;
 }
+
+.dropdown {
+  width: 200px;
+}
+
+.vertical-divider {
+  border-left: 2px solid #444; /* Match the navbar divider */
+  height: 100%; /* Ensure it spans the height of its container */
+  margin: auto; /* Center it vertically */
+  opacity: 0.8; /* Slight transparency for a subtle effect */
+}
+
+
 </style>
 

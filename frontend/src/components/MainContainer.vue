@@ -1,146 +1,210 @@
 <template>
-    <div>
-        <ConfigurationPanel 
-          @year-range-changed = "onYearRangeChanged"
-        />
-        <CountryCompositionDisclaimer/>
-
-
-        
-      <!-- Main Content Section -->
-      <v-container fluid class="full-height">
-  <v-row class="full-height">
-    <!-- Column 1 -->
-    <v-col cols="12" md="4" class="full-height">
-      <!-- Row 1, Widget 1 -->
-      <v-card class="widget mb-4">
-        <div class="control-panel-font">Most Dominating Countries</div>
-        <MostDominatingCountries :selectedYearRange="selectedYearRange" />
-      </v-card>
-      <!-- Row 2, Widget 2 -->
-      <v-card class="widget">
-        <div class="control-panel-font">Word Cloud</div>
-        <WordCloud :selectedYearRange="selectedYearRange" />
-      </v-card>
-    </v-col>
-
-    <!-- Column 2 -->
-    <v-col cols="12" md="8" class="full-height">
-      <!-- Row 1, Widget 3 -->
-      <v-card class="widget mb-4">
-        <div class="control-panel-font" style="margin-left: 20px;">Ranking Comparison</div>
-        <RankingComparison :selectedYearRange="selectedYearRange" class="line-graph-container" />
-      </v-card>
-      <!-- Row 2, Widget 4 -->
-      <v-card class="widget">
-        <div class="control-panel-font">Voting Matrix</div>
-        <VotingMatrix :selectedYearRange="selectedYearRange" :votingData="votingData" />
-      </v-card>
-    </v-col>
-
-    <!-- Column 3 (Voting Clusters and new card) -->
-    <v-col cols="12" md="12" class="full-height">
-      <v-row>
-        <!-- Voting Clusters -->
-        <v-col cols="8">
-          <v-card class="widget h-100">
-            <div class="control-panel-font">Voting Clusters</div>
-            <VotingClusters
-              :selectedYearRange="selectedYearRange" 
-              @cluster-count-updated="updateClusterCount"/>
-          </v-card>
-        </v-col>
-        
-        <!-- New Card -->
-        <v-col cols="4">
-          <v-card style="height: 750px; overflow-y: auto;">
-            <div class="control-panel-font">Voting Clusters List</div>
-            <!-- Replace the following with your actual component -->
-            <ClusterList 
-              :selectedYearRange="selectedYearRange"
-              :numberOfClusters="numberOfClusters" 
-            />
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-col>
-  </v-row>
-</v-container>
-
+  <div class="main-container">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+      <div class="logo">Eurotrash</div>
+      <ul class="nav-list">
+        <li class="nav-item" @click="setPage('Performance')" :class="{ active: currentPage === 'Performance' }">
+          Performance
+        </li>
+        <li class="nav-item" @click="setPage('Voting Patterns')" :class="{ active: currentPage === 'Voting Patterns' }">
+          Voting Patterns
+        </li>
+        <li class="nav-item" @click="setPage('Fun')" :class="{ active: currentPage === 'Fun' }">
+          Fun
+        </li>
+      </ul>
     </div>
-  </template>
+
+    <!-- Main Content Section -->
+    <div class="content">
+      <!-- Pass currentPage and selectedCountries to ConfigurationPanel -->
+      <ConfigurationPanel 
+        :current-page="currentPage" 
+        :selected-countries="selectedCountries"
+        @update-selected-countries="updateSelectedCountries"
+        @year-range-changed="onYearRangeChanged" />
+      <CountryCompositionDisclaimer />
+
+      <v-container fluid class="full-height">
+        <v-row class="full-height">
+          <!-- Performance Page -->
+          <template v-if="currentPage === 'Performance'">
+            <v-col cols="12" md="6" class="full-height">
+              <v-card class="widget mb-4">
+                <div class="control-panel-font">Ranking Comparison</div>
+                <RankingComparison 
+                  :selectedCountries="selectedCountries"
+                  :selectedYearRange="selectedYearRange" />
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" md="6" class="full-height">
+              <v-card class="widget mb-4">
+                <div class="control-panel-font">Most Dominating Countries</div>
+                <MostDominatingCountries :selectedYearRange="selectedYearRange" />
+              </v-card>
+            </v-col>
+          </template>
+
+          <!-- Voting Patterns Page -->
+          <template v-if="currentPage === 'Voting Patterns'">
+            <v-col cols="12" md="12" class="full-height">
+              <v-card class="widget mb-4">
+                <div class="control-panel-font">Voting Clusters</div>
+                <VotingClusters :selectedYearRange="selectedYearRange" />
+              </v-card>
+            </v-col>
+          </template>
+
+          <!-- Fun Page -->
+          <template v-if="currentPage === 'Fun'">
+            <v-col cols="12" md="6" class="full-height">
+              <v-card class="widget mb-4">
+                <div class="control-panel-font">Word Cloud</div>
+                <WordCloud :selectedYearRange="selectedYearRange" />
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" md="6" class="full-height">
+              <v-card class="widget mb-4">
+                <div class="control-panel-font">Fun Widget</div>
+                <p> Placeholder Youtube Vid Widget</p>
+              </v-card>
+            </v-col>
+          </template>
+        </v-row>
+      </v-container>
+    </div>
+  </div>
+</template>
 
 <script>
-
-import ConfigurationPanel from './ConfigurationPanel.vue';
-import MostDominatingCountries from './MostDominatingCountries.vue';
-import WordCloud from './WordCloud.vue';
-import VotingMatrix from './VotingMatrix.vue';
-import RankingComparison from './RankingComparison.vue';
-import CountryCompositionDisclaimer from './CountryCompositionDisclaimer.vue';
-import VotingClusters from './VotingClusters.vue';
-import ClusterList from './ClusterList.vue';
+import ConfigurationPanel from "./ConfigurationPanel.vue";
+import MostDominatingCountries from "./MostDominatingCountries.vue";
+import WordCloud from "./WordCloud.vue";
+import VotingClusters from "./VotingClusters.vue";
+import RankingComparison from "./RankingComparison.vue";
+import CountryCompositionDisclaimer from "./CountryCompositionDisclaimer.vue";
 
 export default {
-  components: { ConfigurationPanel, CountryCompositionDisclaimer, MostDominatingCountries, WordCloud, VotingMatrix, RankingComparison, VotingClusters, ClusterList},
+  components: {
+    ConfigurationPanel,
+    CountryCompositionDisclaimer,
+    MostDominatingCountries,
+    WordCloud,
+    VotingClusters,
+    RankingComparison,
+  },
   data() {
     return {
       selectedYearRange: null,
-      numberOfClusters: 5,
+      currentPage: "Performance", // Default Page
+      selectedCountries: ["Sweden", "Italy"], // Default selected countries
     };
   },
   methods: {
     onYearRangeChanged(yearRange) {
-      this.selectedYearRange = yearRange; // Update the selected year
+      this.selectedYearRange = yearRange; // Update the selected year range
     },
-    updateClusterCount(newCount) {
-      this.numberOfClusters = newCount; // Update the number of clusters
-  },
+    setPage(page) {
+      this.currentPage = page;
+    },
+    updateSelectedCountries(countries) {
+      this.selectedCountries = countries; // Update selected countries
+    },
   },
 };
-
-
 </script>
-  
-  <style scoped>
 
-  /* Ensures the container takes up the full viewport height */
-  .full-height {
-    height: calc(100vh - 90px); /* Subtract header height */
-  }
-  
-  /* Widgets should fill their respective rows and columns */
-  .widget {
-    height: calc(50% - 16px); /* Divides column into two rows with spacing */
-  }
-  
-  /* Space between widgets in columns */
-  .mb-4 {
-    margin-bottom: 16px;
-  }
-  
-  /* Styling for widget titles */
-  .control-panel-font {
-    font-family: "Open Sans", verdana, arial, sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-  }
-  
-  /* Placeholder styling for visual representation */
-  .widget-placeholder {
-    background-color: #f0f0f0;
-    border: 1px dashed #ccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    height: 100%;
-  }
+<style>
+/* Main container styling */
 
-  .line-graph-container {
-    padding-right: 1px; /* Add padding inside the card */
-  }
+:root {
+  --base-color: #1a1a1a; /* Base dark theme color */
+  --highlight-color: #1f1e1e; /* Slightly brighter for navigation bar */
+  --content-bg-color: #181818; /* Darker content background */
+  --text-color: #ffffff; /* White text for contrast */
+  --hover-color: #3a3a3a; /* Brighter hover state */
+}
 
-  </style>
-  
+/* Main container styling */
+.main-container {
+  display: flex;
+  height: 100vh;
+  background-color: var(--content-bg-color); /* Darker background for content */
+  color: var(--text-color);
+}
+
+/* Sidebar styling */
+/* Sidebar styling */
+.sidebar {
+  background: linear-gradient(to right, var(--highlight-color), var(--content-bg-color));
+  color: var(--text-color);
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); 
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Content styling */
+.content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: var(--content-bg-color);
+  color: var(--text-color);
+}
+
+
+/* Logo styling */
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-color);
+}
+
+/* Navigation list styling */
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin: 10px 0;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.nav-item:hover {
+  background-color: var(--hover-color); /* Brighter hover state */
+  transform: scale(1.05); /* Subtle zoom effect */
+}
+
+.nav-item.active {
+  background-color: var(--base-color); /* Match base dark color for active state */
+  font-weight: bold;
+  border-left: 4px solid var(--text-color); /* Indicator for active page */
+}
+
+
+
+/* Widgets styling */
+.widget {
+  background-color: var(--base-color); /* Match base theme for widgets */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  color: var(--text-color);
+}
+</style>
+
+
