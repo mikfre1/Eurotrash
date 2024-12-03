@@ -78,6 +78,21 @@
     yRange[1] + zoomOutFactor * (yRange[1] - yRange[0]),
   ];
 
+  // Define a custom colorscale with white as the base color
+  const customColorscale = [
+    [0, "white"],              // White for the lowest values (0 or missing)
+    [0.1, "rgb(255,245,240)"], // Very light red
+    [0.3, "rgb(254,224,210)"], // Light red
+    [0.5, "rgb(252,187,161)"], // Moderate red
+    [0.7, "rgb(252,146,114)"], // Slightly stronger red
+    [0.85, "rgb(251,106,74)"], // Deeper red
+    [1, "rgb(203,24,29)"],     // Very deep red for highest values
+  ];
+
+  // Find the minimum and maximum values in the matrix for scaling
+  const zmin = 0;
+  const zmax = Math.max(...this.matrix.flat());
+
   // Prepare data for Plotly
   const data = [
     {
@@ -85,8 +100,10 @@
       x: this.countries, // X-axis: countries that received votes
       y: this.countries, // Y-axis: countries that voted
       type: "heatmap",
-      colorscale: "Reds",
+      colorscale: customColorscale,
       hoverongaps: false,
+      zmin: zmin, // Minimum value for the color range
+      zmax: zmax, // Maximum value for the color range
     },
   ];
 

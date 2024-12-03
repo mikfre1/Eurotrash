@@ -7,6 +7,8 @@ import re
 import requests
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -15,6 +17,7 @@ CORS(app)
 # Load datasets
 contestants_df = pd.read_csv('../dataset/contestants_cleaned.csv')
 votes_df = pd.read_csv('../dataset/votes_cleaned.csv')
+countries_regions_df = pd.read_csv('../dataset/countries.csv')
 country_df = pd.read_csv('../dataset/country_mapping_iso.csv')
 country_df['Code'] = country_df['Code'].str.lower()
 
@@ -31,7 +34,7 @@ def most_dominating_countries():
     if not yearRangeStart:
         return jsonify({"error": "Year parameter is required"}), 400
 
-    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
+    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd) & (votes_df['round'] == 'final')]
 
     dominating_countries = (
         filtered.groupby('to_country')['per_of_pot_max']
@@ -60,7 +63,7 @@ def yearly_rankings():
         return jsonify({"error": "Year parameter is required"}), 400
 
 
-    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)] 
+    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd) & (votes_df['round'] == 'final')]
 
     yearly_rankings = (
         filtered.groupby(['year', 'to_country'])['place_contest']
@@ -82,7 +85,7 @@ def word_cloud():
     if not yearRangeStart:
         return jsonify({"error": "Year parameter is required"}), 400
 
-    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
+    filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd) & (votes_df['round'] == 'final')]
 
     # Combine all lyrics into a single string
     all_lyrics = " ".join(filtered['lyrics_token'].dropna())
@@ -117,7 +120,7 @@ def word_cloud_filter():
         return jsonify({"error": "Year parameter is required"}), 400
     
     if selectedFilter == "All":
-        filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd)]
+        filtered = contestants_df[(contestants_df['year'] >= yearRangeStart) & (contestants_df['year'] <= yearRangeEnd) & (votes_df['round'] == 'final')]
 
     if selectedFilter == "Top 5":
         # find the top 5 countries by calling mostdomcountries here and save in topFiveCountries
@@ -187,8 +190,7 @@ def countries_in_favor():
     code_to_name = dict(zip(country_df["Code"], country_df["Name"]))
 
     # Filter votes by the selected year
-    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd)]
-
+    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd) & (votes_df['round'] == 'final')]
     # Aggregate votes into a matrix: points given by one country to another
     heatmap_data = (
         filtered_votes.groupby(['from_country_id', 'to_country_id'])['perc_of_max']
@@ -201,9 +203,10 @@ def countries_in_favor():
         set(filtered_votes['from_country_id']) | set(filtered_votes['to_country_id'])
     )
     heatmap_matrix = pd.DataFrame(index=all_countries, columns=all_countries).fillna(0)
+    heatmap_matrix = heatmap_matrix.astype(float)
 
     for _, row in heatmap_data.iterrows():
-        heatmap_matrix.at[row['from_country_id'], row['to_country_id']] = row['vote_count']
+        heatmap_matrix.at[row['from_country_id'], row['to_country_id']] = float(row['vote_count'])
 
     # Replace codes with names for rows and columns
     heatmap_matrix.index = heatmap_matrix.index.map(code_to_name)
@@ -258,7 +261,7 @@ def voting_clusters():
         return jsonify({"error": "Year range parameters are required"}), 400
 
     # Filter the voting data based on the selected year range
-    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd)]
+    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd) & (votes_df['round'] == 'final')]
 
     # Pivot table to create the voting matrix
     voting_matrix = filtered_votes.pivot_table(
@@ -268,14 +271,18 @@ def voting_clusters():
         aggfunc='sum',
         fill_value=0
     )
+    # Standardize the voting matrix
+    scaler = StandardScaler()
+    standardized_matrix = scaler.fit_transform(voting_matrix)
 
     # Reduce dimensions using PCA
     pca = PCA(n_components=2)
-    voting_matrix_2d = pca.fit_transform(voting_matrix)
+    voting_matrix_2d = pca.fit_transform(standardized_matrix)
+    explained_variance = pca.explained_variance_ratio_ * 100  # Convert to percentage
 
     # Apply K-Means clustering (you can adjust the number of clusters)
     kmeans = KMeans(n_clusters=numberOfClusters, random_state=42)
-    clusters = kmeans.fit_predict(voting_matrix)
+    clusters = kmeans.fit_predict(voting_matrix_2d)
 
     # Prepare data for visualization
     cluster_data = [
@@ -288,10 +295,14 @@ def voting_clusters():
         for i, country in enumerate(voting_matrix.index)
     ]
 
-    return jsonify(cluster_data)
-
+    return  jsonify({
+        "clusters": cluster_data,
+        "explained_variance": explained_variance.tolist()
+    })
 @app.route('/api/voting_clusters_fullname', methods=['GET'])
 def voting_clusters_fullName():
+    color_palette = ['blue', 'orange', 'green', 'red', 'purple', 'brown', 'pink']  # Extend if needed
+
     # Get year range from the request
     yearRangeStart = request.args.get('yearRangeStart', type=int)
     yearRangeEnd = request.args.get('yearRangeEnd', type=int)
@@ -301,7 +312,11 @@ def voting_clusters_fullName():
         return jsonify({"error": "Year range parameters are required"}), 400
 
     # Filter the voting data based on the selected year range
-    filtered_votes = votes_df[(votes_df['year'] >= yearRangeStart) & (votes_df['year'] <= yearRangeEnd)]
+    filtered_votes = votes_df[
+        (votes_df['year'] >= yearRangeStart) &
+        (votes_df['year'] <= yearRangeEnd) &
+        (votes_df['round'] == 'final')
+    ]
 
     # Pivot table to create the voting matrix
     voting_matrix = filtered_votes.pivot_table(
@@ -312,16 +327,24 @@ def voting_clusters_fullName():
         fill_value=0
     )
 
+    # Standardize the voting matrix
+    scaler = StandardScaler()
+    standardized_matrix = scaler.fit_transform(voting_matrix)
+
     # Reduce dimensions using PCA
     pca = PCA(n_components=2)
-    voting_matrix_2d = pca.fit_transform(voting_matrix)
+    voting_matrix_2d = pca.fit_transform(standardized_matrix)
+    explained_variance = pca.explained_variance_ratio_ * 100  # Convert to percentage
 
     # Apply K-Means clustering (you can adjust the number of clusters)
     kmeans = KMeans(n_clusters=numberOfClusters, random_state=42)
-    clusters = kmeans.fit_predict(voting_matrix)
+    clusters = kmeans.fit_predict(voting_matrix_2d)
 
     # Use the existing `country_df` and its dictionary mapping
     country_dict = dict(zip(country_df['Code'], country_df['Name']))
+
+    # Assign colors to clusters
+    cluster_colors = {cluster: color_palette[cluster % len(color_palette)] for cluster in range(numberOfClusters)}
 
     # Prepare data for visualization
     cluster_data = [
@@ -329,15 +352,60 @@ def voting_clusters_fullName():
             "country": country_dict.get(country.lower(), country),  # Convert abbreviation to full name
             "x": float(voting_matrix_2d[i, 0]),  # PCA Component 1
             "y": float(voting_matrix_2d[i, 1]),  # PCA Component 2
-            "cluster": int(clusters[i])  # Cluster ID
+            "cluster": int(clusters[i]),  # Cluster ID
+            "color": cluster_colors[clusters[i]]  # Cluster color
         }
         for i, country in enumerate(voting_matrix.index)
     ]
 
-    return jsonify(cluster_data)
+    # Compute regional composition
+    region_info = compute_cluster_regions(cluster_data, countries_regions_df)
+
+    return jsonify({
+        "clusters": cluster_data,
+        "explained_variance": explained_variance.tolist(),
+        "region_info": region_info
+    })
 
 
 
+def compute_cluster_regions(cluster_data, region_df):
+    # Convert cluster_data to DataFrame
+    region_df['country'] = region_df['country'].str.strip().str.lower()
+
+    cluster_df = pd.DataFrame(cluster_data)
+
+    # Map full country names to country codes
+    country_name_to_code = dict(zip(country_df['Name'], country_df['Code']))
+    cluster_df['country_code'] = cluster_df['country'].map(country_name_to_code)
+
+
+    # Debug: Check for unmapped countries
+    print("Unmapped Countries:", cluster_df[cluster_df['country_code'].isnull()])
+
+    # Merge cluster data with region information
+    cluster_df = cluster_df.merge(
+        region_df[['country', 'region']],
+        left_on='country_code',
+        right_on='country',
+        how='left'
+    )
+
+    # Debug: Check for missing regions after merge
+    print("Merged Data Missing Regions:", cluster_df[cluster_df['region'].isnull()])
+
+    # Group by cluster and calculate the percentage of each region
+    region_summary = cluster_df.groupby('cluster')['region'].value_counts(normalize=True) * 100
+    region_summary = region_summary.rename("percentage").reset_index()
+
+    # Format as dictionary for easier frontend use
+    region_info = {}
+    for cluster in region_summary['cluster'].unique():
+        cluster_regions = region_summary[region_summary['cluster'] == cluster]
+        # Convert cluster ID to int explicitly
+        region_info[int(cluster)] = cluster_regions[['region', 'percentage']].to_dict('records')
+
+    return region_info
 
 
 # Run Flask app
