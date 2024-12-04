@@ -131,6 +131,7 @@ export default {
   margin: 10px 0;
   border-radius: 5px;
   font-size: 14px;
+  color: #0d457a; /* Replace #333 with your desired color */
 }
 .disclaimer-container h3 {
   margin: 0 0 10px;

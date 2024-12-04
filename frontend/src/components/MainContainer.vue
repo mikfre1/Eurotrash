@@ -19,8 +19,8 @@
     <!-- Main Content Section -->
     <div class="content">
       <!-- Pass currentPage and selectedCountries to ConfigurationPanel -->
-      <ConfigurationPanel 
-        :current-page="currentPage" 
+      <ConfigurationPanel
+        :current-page="currentPage"
         :selected-countries="selectedCountries"
         @update-selected-countries="updateSelectedCountries"
         @year-range-changed="onYearRangeChanged" />
@@ -33,7 +33,7 @@
             <v-col cols="12" md="6" class="full-height">
               <v-card class="widget mb-4">
                 <div class="control-panel-font">Ranking Comparison</div>
-                <RankingComparison 
+                <RankingComparison
                   :selectedCountries="selectedCountries"
                   :selectedYearRange="selectedYearRange" />
               </v-card>
@@ -128,15 +128,19 @@ export default {
   --hover-color: #3a3a3a; /* Brighter hover state */
 }
 
+.full-height {
+  height: 100%; /* Fill the parent's height */
+}
+
 /* Main container styling */
 .main-container {
   display: flex;
-  height: 100vh;
+  min-height: 100vh; /* Use min-height to allow scrolling */
+  height: auto;
   background-color: var(--content-bg-color); /* Darker background for content */
   color: var(--text-color);
 }
 
-/* Sidebar styling */
 /* Sidebar styling */
 .sidebar {
   background: linear-gradient(to right, var(--highlight-color), var(--content-bg-color));
@@ -145,13 +149,14 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); 
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Content styling */
 .content {
   flex-grow: 1;
+  overflow-y: auto; /* Enable scrolling for overflowing content */
   padding: 20px;
   background-color: var(--content-bg-color);
   color: var(--text-color);

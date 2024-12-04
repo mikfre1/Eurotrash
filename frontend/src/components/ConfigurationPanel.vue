@@ -156,7 +156,7 @@ export default {
 <style>
 
 .noUi-connect {
-  background: #252569; /* Use a color that matches your theme */
+  background: #09529c; /* Dodger Blue for the selected range */
 }
 
 /* Customize the handles (circles on the sides) */
