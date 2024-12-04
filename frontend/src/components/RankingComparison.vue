@@ -98,109 +98,158 @@ export default {
 
       this.updateLineGraph();
       },
-      updateLineGraph() {
-        if (!this.lineGraph) return;
+    updateLineGraph() {
+      if (!this.lineGraph) return;
 
-          const { svg, width, height } = this.lineGraph;
+      const { svg, width, height } = this.lineGraph;
 
-          // Define scales
-          const xScale = d3.scaleLinear().range([0, width]);
-          const yScale = d3.scaleLinear().range([height, 0]); // Invert y-axis
+      // Define scales
+      const xScale = d3.scaleLinear().range([0, width]);
+      const yScale = d3.scaleLinear().range([height, 0]); // Invert y-axis
 
-          // Filter rankingData for selected countries
-          const filteredData = Object.keys(this.rankingData)
-            .filter((country) => this.selectedCountries.includes(country))
-            .reduce((obj, key) => {
-              obj[key] = this.rankingData[key];
-              return obj;
-            }, {});
+      // Filter rankingData for selected countries
+      const filteredData = Object.keys(this.rankingData)
+          .filter((country) => this.selectedCountries.includes(country))
+          .reduce((obj, key) => {
+            obj[key] = this.rankingData[key];
+            return obj;
+          }, {});
 
-          const countries = Object.keys(filteredData);
+      const countries = Object.keys(filteredData);
 
-          if (!countries.length) {
-            d3.select("#lineGraph").html("<p>No data available</p>");
-            return;
-          }
+      if (!countries.length) {
+        d3.select("#lineGraph").html("<p>No data available</p>");
+        return;
+      }
 
-          const years = Object.keys(filteredData[countries[0]]).map(Number);
-          const yearRangeStart = Math.min(...years);
-          const yearRangeEnd = Math.max(...years);
-          const totalYears = yearRangeEnd - yearRangeStart + 1;
+      const years = Object.keys(filteredData[countries[0]]).map(Number);
+      const yearRangeStart = Math.min(...years);
+      const yearRangeEnd = Math.max(...years);
+      const totalYears = yearRangeEnd - yearRangeStart + 1;
 
-          // Determine the interval dynamically based on the year range
-          let interval = 5; // Default to 5 years
-          if (totalYears > 50) interval = 10; // For long year ranges, increase the interval
-          else if (totalYears < 20) interval = 2; // For shorter ranges, decrease the interval
+      // Determine the interval dynamically based on the year range
+      let interval = 5; // Default to 5 years
+      if (totalYears > 50) interval = 10; // For long year ranges, increase the interval
+      else if (totalYears < 20) interval = 2; // For shorter ranges, decrease the interval
 
-          xScale.domain([yearRangeStart, yearRangeEnd]);
-          yScale.domain([1, d3.max(countries.flatMap((c) => Object.values(filteredData[c]))) || 10]);
+      xScale.domain([yearRangeStart, yearRangeEnd]);
+      yScale.domain([1, d3.max(countries.flatMap((c) => Object.values(filteredData[c]))) || 10]);
 
-          // Generate aggregated data based on intervals
-          const aggregatedData = countries.map((country) => {
-            const rankings = Object.entries(filteredData[country])
-              .map(([year, rank]) => ({ year: +year, rank }))
-              .filter((d) => d.rank !== 0); // Skip points with rank = 0
+      // Generate aggregated data based on intervals
+      const aggregatedData = countries.map((country) => {
+        const rankings = Object.entries(filteredData[country])
+            .map(([year, rank]) => ({ year: +year, rank }))
+            .filter((d) => d.rank !== 0); // Skip points with rank = 0
 
-            const groupedData = [];
-            for (let i = yearRangeStart; i <= yearRangeEnd; i += interval) {
-              const startYear = i;
-              const endYear = Math.min(i + interval - 1, yearRangeEnd);
+        const groupedData = [];
+        for (let i = yearRangeStart; i <= yearRangeEnd; i += interval) {
+          const startYear = i;
+          const endYear = Math.min(i + interval - 1, yearRangeEnd);
 
-              const rangeRankings = rankings
-                .filter((d) => d.year >= startYear && d.year <= endYear)
-                .map((d) => d.rank);
+          const rangeRankings = rankings
+              .filter((d) => d.year >= startYear && d.year <= endYear)
+              .map((d) => d.rank);
 
-              const avgRank = rangeRankings.length > 0
-                ? rangeRankings.reduce((a, b) => a + b, 0) / rangeRankings.length
-                : null;
+          const avgRank = rangeRankings.length > 0
+              ? rangeRankings.reduce((a, b) => a + b, 0) / rangeRankings.length
+              : null;
 
-              groupedData.push({
-                year: startYear === yearRangeStart ? startYear : endYear, // Use exact year for the first point
-                rank: startYear === yearRangeStart
-                  ? rankings.find((d) => d.year === startYear)?.rank || null
-                  : avgRank,
-              });
-            }
-
-            return { country, values: groupedData.filter((d) => d.rank !== null) }; // Remove null ranks
+          groupedData.push({
+            year: startYear === yearRangeStart ? startYear : endYear, // Use exact year for the first point
+            rank: startYear === yearRangeStart
+                ? rankings.find((d) => d.year === startYear)?.rank || null
+                : avgRank,
           });
+        }
 
-          // Define line generator
-          const line = d3.line()
-            .defined((d) => d.rank !== null && !isNaN(d.rank))
-            .x((d) => xScale(d.year))
-            .y((d) => yScale(d.rank));
+        return { country, values: groupedData.filter((d) => d.rank !== null) }; // Remove null ranks
+      });
 
-          // Create axes
-          const xAxis = d3.axisBottom(xScale).ticks(Math.ceil(totalYears / interval));
-          const yAxis = d3.axisLeft(yScale);
+      // Define line generator
+      const line = d3.line()
+          .defined((d) => d.rank !== null && !isNaN(d.rank))
+          .x((d) => xScale(d.year))
+          .y((d) => yScale(d.rank));
 
-          svg.selectAll(".x-axis").data([0]).join("g")
-            .attr("class", "x-axis")
-            .attr("transform", `translate(0, ${height})`)
-            .call(xAxis);
+      // Create axes
+      const xAxis = d3.axisBottom(xScale).ticks(Math.ceil(totalYears / interval));
+      const yAxis = d3.axisLeft(yScale);
 
-          svg.selectAll(".y-axis").data([0]).join("g")
-            .attr("class", "y-axis")
-            .call(yAxis);
+      svg.selectAll(".x-axis").data([0]).join("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${height})`)
+          .call(xAxis);
 
-          // Draw lines
-          svg.selectAll(".line").data(aggregatedData).join("path")
-            .attr("class", "line")
-            .attr("fill", "none")
-            .attr("stroke", (_, i) => d3.schemeCategory10[i % 10])
-            .attr("stroke-width", 2)
-            .attr("d", (d) => line(d.values));
-        },
+      svg.selectAll(".y-axis").data([0]).join("g")
+          .attr("class", "y-axis")
+          .call(yAxis);
 
+      // Draw lines
+      svg.selectAll(".line").data(aggregatedData).join("path")
+          .attr("class", "line")
+          .attr("fill", "none")
+          .attr("stroke", (_, i) => d3.schemeTableau10[i % 10]) // Brighter and contrasting colors
+          .attr("stroke-width", 2)
+          .attr("d", (d) => line(d.values));
 
+      // Add gridlines
+      svg.append("g")
+          .attr("class", "grid")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(xScale).ticks(5).tickSize(-height).tickFormat(""));
+      svg.append("g")
+          .attr("class", "grid")
+          .call(d3.axisLeft(yScale).ticks(5).tickSize(-width).tickFormat(""));
+
+      const legend = svg.selectAll(".legend")
+          .data(countries)
+          .join("g")
+          .attr("class", "legend")
+          .attr("transform", (_, i) => `translate(0, ${i * 20})`);
+
+      legend.append("rect")
+          .attr("x", width - 18)
+          .attr("width", 18)
+          .attr("height", 18)
+          .style("fill", (_, i) => d3.schemeTableau10[i % 10]);
+
+      legend.append("text")
+          .attr("x", width - 24)
+          .attr("y", 9)
+          .attr("dy", ".35em")
+          .style("text-anchor", "end")
+          .text(d => d)
+          .style("fill", "#e0e0e0"); // Light text for dark background
+
+      svg.selectAll(".x-axis text").attr("class", "axis-label");
+      svg.selectAll(".y-axis text").attr("class", "axis-label");
+
+    },
   },
 };
 </script>
 
 <style scoped>
 .line-graph-container {
-  width: 100%;
-  height: 100%;
+  background-color: #39477c; /* Match the dark theme */
+  border-radius: 8px; /* Slightly rounded corners */
+  padding: 10px;
 }
+.axis-label {
+  fill: #e0e0e0; /* Softer white for axis labels */
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+}
+
+.grid-line {
+  stroke: #666; /* Lighter gridlines for better visibility */
+  stroke-opacity: 0.4; /* Adjust transparency */
+}
+
+.line {
+  stroke-width: 3; /* Thicker lines for better contrast */
+  fill: none;
+}
+
+
 </style>

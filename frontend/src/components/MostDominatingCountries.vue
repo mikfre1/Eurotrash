@@ -152,7 +152,7 @@ export default {
 
 <style scoped>
 .world-map {
-  height: 800px;
+  height: 40vh; /* The map takes 50% of the viewport height */
   width: 100%;
 }
 </style>

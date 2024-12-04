@@ -57,78 +57,84 @@
         }
       },
       renderHeatmap() {
-  if (this.countries.length === 0 || this.matrix.length === 0) {
-    console.warn("No data available to render heatmap.");
-    return;
-  }
+        if (this.countries.length === 0 || this.matrix.length === 0) {
+          console.warn("No data available to render heatmap.");
+          return;
+        }
 
-  const zoomOutFactor = 0.0;
+        const zoomOutFactor = 0.0;
 
-  // Calculate the default range for x and y axes
-  const xRange = [-0.5, this.countries.length - 0.5];
-  const yRange = [-0.5, this.countries.length - 0.5];
+        // Calculate the default range for x and y axes
+        const xRange = [-0.5, this.countries.length - 0.5];
+        const yRange = [-0.5, this.countries.length - 0.5];
 
-  // Adjust the range to zoom out by the specified factor
-  const zoomedXRange = [
-    xRange[0] - zoomOutFactor * (xRange[1] - xRange[0]),
-    xRange[1] + zoomOutFactor * (xRange[1] - xRange[0]),
-  ];
-  const zoomedYRange = [
-    yRange[0] - zoomOutFactor * (yRange[1] - yRange[0]),
-    yRange[1] + zoomOutFactor * (yRange[1] - yRange[0]),
-  ];
+        // Adjust the range to zoom out by the specified factor
+        const zoomedXRange = [
+          xRange[0] - zoomOutFactor * (xRange[1] - xRange[0]),
+          xRange[1] + zoomOutFactor * (xRange[1] - xRange[0]),
+        ];
+        const zoomedYRange = [
+          yRange[0] - zoomOutFactor * (yRange[1] - yRange[0]),
+          yRange[1] + zoomOutFactor * (yRange[1] - yRange[0]),
+        ];
 
-  // Define a custom colorscale with white as the base color
-  const customColorscale = [
-    [0, "white"],              // White for the lowest values (0 or missing)
-    [0.1, "rgb(255,245,240)"], // Very light red
-    [0.3, "rgb(254,224,210)"], // Light red
-    [0.5, "rgb(252,187,161)"], // Moderate red
-    [0.7, "rgb(252,146,114)"], // Slightly stronger red
-    [0.85, "rgb(251,106,74)"], // Deeper red
-    [1, "rgb(203,24,29)"],     // Very deep red for highest values
-  ];
+        // Define a custom colorscale with white as the base color
+        const customColorscale = [
+          [0, "white"],
+          [0.1, "rgb(255,245,240)"],
+          [0.3, "rgb(254,224,210)"],
+          [0.5, "rgb(252,187,161)"],
+          [0.7, "rgb(252,146,114)"],
+          [0.85, "rgb(251,106,74)"],
+          [1, "rgb(203,24,29)"],
+        ];
 
-  // Find the minimum and maximum values in the matrix for scaling
-  const zmin = 0;
-  const zmax = Math.max(...this.matrix.flat());
+        // Find the minimum and maximum values in the matrix for scaling
+        const zmin = 0;
+        const zmax = Math.max(...this.matrix.flat());
 
-  // Prepare data for Plotly
-  const data = [
-    {
-      z: this.matrix,
-      x: this.countries, // X-axis: countries that received votes
-      y: this.countries, // Y-axis: countries that voted
-      type: "heatmap",
-      colorscale: customColorscale,
-      hoverongaps: false,
-      zmin: zmin, // Minimum value for the color range
-      zmax: zmax, // Maximum value for the color range
-    },
-  ];
+        // Prepare data for Plotly
+        const data = [
+          {
+            z: this.matrix,
+            x: this.countries,
+            y: this.countries,
+            type: "heatmap",
+            colorscale: customColorscale,
+            hoverongaps: false,
+            zmin: zmin,
+            zmax: zmax,
+          },
+        ];
 
-  const layout = {
-    xaxis: {
-      title: "To Country",
-      tickangle: -45, // Rotate x-axis labels for better fit
-      range: zoomedXRange, // Apply the zoomed-out range
-    },
-    yaxis: {
-      title: "From Country",
-      tickangle: -45,
-      range: zoomedYRange, // Apply the zoomed-out range
-    },
-    margin: {
-      t: 0, // Top margin
-      l: 200, // Left margin
-      r: 0, // Right margin
-      b: 275, // Bottom margin (increased for x-axis labels)
-    },
-  };
+        const layout = {
+          xaxis: {
+            title: "To Country",
+            tickangle: -45,
+            range: zoomedXRange,
+          },
+          yaxis: {
+            title: "From Country",
+            tickangle: -45,
+            range: zoomedYRange,
+          },
+          margin: {
+            t: 0,
+            l: 200,
+            r: 0,
+            b: 275,
+          },
+          paper_bgcolor: "#39477c", // Background color of the entire plot area
+          plot_bgcolor: "#1e1e1e", // Background color of the graph area
+          font: {
+            color: "#e0e0e0", // Font color for axis labels and titles
+          },
+        };
 
-  // Render the heatmap
-  Plotly.newPlot(this.$refs.heatmap, data, layout, { responsive: true });
-},
+        // Render the heatmap
+        Plotly.newPlot(this.$refs.heatmap, data, layout, { responsive: true });
+      },
+
     },
   };
   </script>

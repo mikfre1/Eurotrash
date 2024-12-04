@@ -30,21 +30,35 @@
         <v-row class="full-height">
           <!-- Performance Page -->
           <template v-if="currentPage === 'Performance'">
-            <v-col cols="12" md="6" class="full-height">
-              <v-card class="widget mb-4">
-                <div class="control-panel-font">Ranking Comparison</div>
-                <RankingComparison
-                  :selectedCountries="selectedCountries"
-                  :selectedYearRange="selectedYearRange" />
-              </v-card>
-            </v-col>
+            <v-container fluid class="pa-0">
+              <!-- First Row -->
+              <v-row class="pa-0">
+                <v-col cols="12" md="6" class="pa-0">
+                  <v-card class="widget">
+                    <div class="control-panel-font">Ranking Comparison</div>
+                    <RankingComparison :selectedCountries="selectedCountries" :selectedYearRange="selectedYearRange" />
+                  </v-card>
+                </v-col>
 
-            <v-col cols="12" md="6" class="full-height">
-              <v-card class="widget mb-4">
-                <div class="control-panel-font">Most Dominating Countries</div>
-                <MostDominatingCountries :selectedYearRange="selectedYearRange" />
-              </v-card>
-            </v-col>
+                <v-col cols="12" md="6" class="pa-0">
+                  <v-card class="widget">
+                    <div class="control-panel-font">Most Dominating Countries</div>
+                    <MostDominatingCountries :selectedYearRange="selectedYearRange" />
+                  </v-card>
+                </v-col>
+              </v-row>
+
+              <!-- Second Row -->
+              <v-row class="pa-0">
+                <v-col cols="12" class="pa-0">
+                  <v-card class="widget">
+                    <div class="control-panel-font">Voting Heatmap</div>
+                    <VotingMatrix :selectedYearRange="selectedYearRange" />
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-container>
+
           </template>
 
           <!-- Voting Patterns Page -->
@@ -86,6 +100,7 @@ import WordCloud from "./WordCloud.vue";
 import VotingClusters from "./VotingClusters.vue";
 import RankingComparison from "./RankingComparison.vue";
 import CountryCompositionDisclaimer from "./CountryCompositionDisclaimer.vue";
+import VotingMatrix from "./VotingMatrix.vue";
 
 export default {
   components: {
@@ -95,6 +110,7 @@ export default {
     WordCloud,
     VotingClusters,
     RankingComparison,
+    VotingMatrix,
   },
   data() {
     return {
@@ -122,14 +138,14 @@ export default {
 
 :root {
   --base-color: #1a1a1a; /* Base dark theme color */
-  --highlight-color: #1f1e1e; /* Slightly brighter for navigation bar */
-  --content-bg-color: #181818; /* Darker content background */
+  --highlight-color: #171717; /* Slightly brighter for navigation bar */
+  --content-bg-color: #1e1f22; /* Darker content background */
   --text-color: #ffffff; /* White text for contrast */
   --hover-color: #3a3a3a; /* Brighter hover state */
 }
 
 .full-height {
-  height: 100%; /* Fill the parent's height */
+  height: auto; /* Fill the parent's height */
 }
 
 /* Main container styling */
