@@ -172,11 +172,13 @@ export default {
 /* Content styling */
 .content {
   flex-grow: 1;
-  overflow-y: auto; /* Enable scrolling for overflowing content */
-  padding: 20px;
+  overflow-y: auto;
+  margin-top: 70px; /* Match this to the header height (e.g., 70px or the actual height of your header) */
+  padding: 20px; /* Padding for general spacing within the content */
   background-color: var(--content-bg-color);
   color: var(--text-color);
 }
+
 
 
 /* Logo styling */

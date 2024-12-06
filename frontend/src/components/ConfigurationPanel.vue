@@ -1,41 +1,23 @@
 <template>
   <div>
     <v-container fluid class="header">
-      <v-row align="center" justify="space-between" class="full-height">
-        <!-- Country Selector (Left) -->
-        <v-col cols="3" class="selectors-section">
-          <v-card-text>
-            <div v-if="currentPage === 'Performance'">
-              <!-- Show Performance specific configuration -->
-              <v-row class="country-selector">
-                <v-col cols="12">
-                  <v-select
-                    :items="availableCountries"
-                    v-model="selectedCountriesInternal"
-                    label="Select Countries"
-                    dense
-                    outlined
-                    multiple
-                    class="custom-dropdown"
-                    style="width: 100%;" 
-                    @change="(val) => { console.log('Selected:', val); emitSelectedCountries() }"
-                  >
-                  </v-select>
-                </v-col>
-              </v-row>
-            </div>
-          </v-card-text>
-        </v-col>
-        
-        <!-- Vertical Divider -->
-        <v-col cols="1" class="divider-section full-height">
-          <div class="vertical-divider"></div>
+      <v-row align="center" justify="flex-start" class="full-height" style="gap: 20px; padding: 0 20px;">
+        <!-- Country Selector (Shown only on Performance Page) -->
+        <v-col cols="3" class="selectors-section" v-if="currentPage === 'Performance'">
+          <v-select
+              :items="availableCountries"
+              v-model="selectedCountriesInternal"
+              label="Select Countries"
+              dense
+              outlined
+              multiple
+              class="custom-dropdown"
+              style="width: 100%;"
+              @change="(val) => { console.log('Selected:', val); emitSelectedCountries() }"
+          ></v-select>
         </v-col>
 
-        <!-- Empty Spacer for Center Alignment -->
-        <v-col cols="1"></v-col>
-
-        <!-- Year Range Slider (Right) -->
+        <!-- Year Range Slider -->
         <v-col cols="7" class="slider-section">
           <div id="year-range-container" class="slider-container">
             <p id="yearRangeLabel" class="slider-label">
@@ -180,16 +162,20 @@ export default {
   border-color: #ffffff; /* Highlight active handle */
 }
 
-/* Header Section */
 .header {
-  padding: 16px;
-  border-bottom: 1px solid #ddd;
+  position: fixed;
+  top: 0;
+  z-index: 10;
   width: 100%;
+  height: 95px; /* Allow dynamic height based on content */
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  background-color: var(--content-bg-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 0 20px;
 }
+
+
 
 /* Title Section */
 .title-section {
@@ -200,10 +186,7 @@ export default {
 
 /* Selectors Section */
 .selectors-section {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-left: 10px;
+  flex: 0 0 30%; /* Take 30% of the space */
 }
 
 .full-height {
@@ -224,46 +207,42 @@ export default {
 }
 
 .slider-container {
-  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  position: relative;
+  align-items: center; /* Center the contents horizontally */
+  width: 100%;
+  padding-right: 30px; /* Add padding to the right edge */
 }
 
 .slider-label {
-  margin-bottom: 10px; /* Space between label and slider */
+  margin-bottom: 10px;
   font-weight: bold;
-  font-size: 16px; /* Adjust font size for better readability */
-  text-align: right;
-  color: white; /* Match the dark theme */
+  font-size: 16px;
+  color: white;
+  text-align: center; /* Center the text */
 }
 
 .slider {
-  width: 70%; /* Adjust width as needed */
-  margin: 10px 0; /* Add spacing between slider and labels */
+  width: 100%; /* Allow the slider to take up full width */
 }
 
 .slider-section {
-  margin-left:auto;
-  text-align: right;
+  flex: 1; /* Take the remaining space */
+  padding-left: 10px;
 }
-
 .slider-year-labels {
-  width: 50%; /* Match the slider width */
+  width: 100%; /* Match the slider width */
   display: flex;
   justify-content: space-between;
   font-size: 14px; /* Adjust font size for labels */
   position: relative;
-  margin-top: 0px; /* Add more space below the slider */
+  margin-top: 5px; /* Add more space below the slider */
 }
 
 .slider-start-year,
 .slider-end-year {
   font-weight: bold;
   color: white; /* Ensure labels match the dark theme */
-  transform: translateY(5px); /* Move the labels slightly downward */
-  font-size: 14px; /* Keep the labels legible */
 }
 
 
