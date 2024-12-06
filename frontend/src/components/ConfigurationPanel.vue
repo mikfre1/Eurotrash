@@ -138,7 +138,7 @@ export default {
 <style>
 
 .noUi-connect {
-  background: #09529c; /* Dodger Blue for the selected range */
+  background: #1f78b4;
 }
 
 /* Customize the handles (circles on the sides) */
@@ -149,7 +149,7 @@ export default {
 
 /* Slider track (unselected area) */
 .noUi-base {
-  background: #888888; /* Match your UI */
+  background: #444444; /* Match your UI */
 }
 
 /* Slider handles on hover */

@@ -93,19 +93,34 @@ export default {
       const totalPoints = country ? country.total_points : 0;
 
       // Determine color based on the distribution of total_points
+      // const getColor = (value, thresholds) => {
+      //   return value > thresholds[4]
+      //     ? "#4B0082" // Deep indigo (highest tier)
+      //     : value > thresholds[3]
+      //     ? "#6A0DAD" // Dark purple
+      //     : value > thresholds[2]
+      //     ? "#8A2BE2" // Blue-violet
+      //     : value > thresholds[1]
+      //     ? "#9370DB" // Medium purple
+      //     : value > thresholds[0]
+      //     ? "#D8BFD8" // Thistle (light purple)
+      //     : "#D3D3D3"; // Very light purple for no data
+      // };
+
       const getColor = (value, thresholds) => {
         return value > thresholds[4]
-          ? "#4B0082" // Deep indigo (highest tier)
-          : value > thresholds[3]
-          ? "#6A0DAD" // Dark purple
-          : value > thresholds[2]
-          ? "#8A2BE2" // Blue-violet
-          : value > thresholds[1]
-          ? "#9370DB" // Medium purple
-          : value > thresholds[0]
-          ? "#D8BFD8" // Thistle (light purple)
-          : "#D3D3D3"; // Very light purple for no data
+            ? "#08306b" // Darkest blue (highest tier)
+            : value > thresholds[3]
+                ? "#08519c" // Dark blue
+                : value > thresholds[2]
+                    ? "#2171b5" // Medium blue
+                    : value > thresholds[1]
+                        ? "#4292c6" // Light blue
+                        : value > thresholds[0]
+                            ? "#c6dbef" // Very light blue
+                            : "#f0f0f0"; // Light gray for no data
       };
+
 
       // Calculate distribution thresholds dynamically
       const values = this.countryData.map((c) => c.total_points);
@@ -152,7 +167,7 @@ export default {
 
 <style scoped>
 .world-map {
-  height: 40vh; /* The map takes 50% of the viewport height */
+  height: 30vh; /* The map takes 50% of the viewport height */
   width: 100%;
 }
 </style>

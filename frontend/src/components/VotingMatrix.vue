@@ -109,22 +109,28 @@
 
         const layout = {
           xaxis: {
-            title: "To Country",
+            title: {
+              text: "To Country",
+              standoff: 1, // Adjust spacing here
+            },
             tickangle: -45,
             range: zoomedXRange,
           },
           yaxis: {
-            title: "From Country",
+            title: {
+              text: "From Country",
+              standoff: 2, // Adjust spacing here
+            },
             tickangle: -45,
             range: zoomedYRange,
           },
           margin: {
-            t: 0,
-            l: 200,
+            t: 10,
+            l: 150,
             r: 0,
-            b: 275,
+            b: 150,
           },
-          paper_bgcolor: "#39477c", // Background color of the entire plot area
+          paper_bgcolor: "#4b4b4b", // Background color of the entire plot area
           plot_bgcolor: "#1e1e1e", // Background color of the graph area
           font: {
             color: "#e0e0e0", // Font color for axis labels and titles
