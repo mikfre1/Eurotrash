@@ -63,6 +63,13 @@ def most_dominating_countries():
     )
     return jsonify(dominating_countries.to_dict(orient='records'))
 
+# Endpoint: returns all countries
+@app.route('/api/available_countries', methods=['GET'])
+def get_available_countries():
+    years = countries_regions_df['country_name'].unique().tolist()
+    years.sort(reverse=True)  # Optional: Sort years in descending order
+    return jsonify(years)
+
 # Endpoint: Get all available years from dataset
 @app.route('/api/available_years', methods=['GET'])
 def get_available_years():

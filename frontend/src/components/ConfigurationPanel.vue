@@ -3,19 +3,34 @@
     <v-container fluid class="header">
       <v-row align="center" justify="flex-start" class="full-height" style="gap: 20px; padding: 0 20px;">
         <!-- Country Selector (Shown only on Performance Page) -->
-        <v-col cols="3" class="selectors-section" v-if="currentPage === 'Performance'">
+        <v-col cols="3" class="selectors-section country-selector-section" v-if="currentPage === 'Performance'">
           <v-select
-              :items="availableCountries"
-              v-model="selectedCountriesInternal"
-              label="Select Countries"
-              dense
-              outlined
-              multiple
-              class="custom-dropdown"
-              style="width: 100%;"
-              @change="(val) => { console.log('Selected:', val); emitSelectedCountries() }"
+            :items="availableCountries"
+            v-model="selectedCountriesInternal"
+            label="Select Countries"
+            dense
+            outlined
+            multiple
+            class="custom-dropdown"
+            style="width: 100%;"
+            @change="(val) => { console.log('Selected:', val); emitSelectedCountries() }"
           ></v-select>
         </v-col>
+
+        <v-col cols="3" class="selectors-section country-selector-section" v-if="currentPage === 'Voting Patterns'">
+          <v-select
+            :items="[3, 4, 5, 6, 7 ,8]"
+            label="Number of Clusters"
+            v-model="selectedNumberOfClustersInternal"
+            outlined
+            dense
+            class="custom-dropdown"
+            style="width: 100%;"
+            @change="(val) => { console.log('Selected:', val); emitSelectedNumberOfClusters() }"
+          />
+        </v-col>
+
+
 
         <!-- Year Range Slider -->
         <v-col cols="7" class="slider-section">
@@ -43,19 +58,21 @@ import 'nouislider/dist/nouislider.css';
 
 export default {
   
-  props: ["currentPage", "selectedCountries"], // Receive currentPage as a prop from MainContainer
+  props: ["currentPage", "selectedCountries", "selectedNumberOfClusters"], // Receive currentPage as a prop from MainContainer
 
   data() {
     return {
+      selectedYear: null,
       years: [], // Populate dynamically from backend
-      selectedYear: null, // The currently selected year
       selectedYearRange: [null, null], // Year range from the slider
       availableCountries: ["Sweden", "Norway", "Germany", "France", "Italy"],
       selectedCountriesInternal: ["Sweden", "Norway"],
+      selectedNumberOfClustersInternal: 3,
     };
   },
   mounted() {
     this.fetchAvailableYears();
+    this.fetchAvailableCountries();
 
   },
 
@@ -75,9 +92,43 @@ export default {
         this.emitSelectedCountries();
       },
     },
+
+    selectedNumberOfClusters: {
+      immediate: true,
+      handler(newVal) {
+        this.selectedNumberOfClustersInternal = newVal;
+      },
+    },
+
+    selectedNumberOfClustersInternal: {
+      deep: true,
+      handler(newVal) {
+        console.log("Watcher triggered: Selected nr of clusters updated:", newVal);
+        this.emitSelectedNumberOfClusters();
+      },
+    },
+
   },
 
   methods: {
+
+    async fetchAvailableCountries() {
+      try {
+        
+        const response = await axios.get("http://127.0.0.1:5000/api/available_countries");
+        this.countries = response.data;
+  
+        if (this.countries.length > 0) {
+          this.availableCountries = this.countries; // Default to the first available year
+          console.log("Available countries:", this.availableCountries)
+        }
+      } catch (error) {
+        console.error("Error fetching available years:", error);
+      }
+    },
+
+
+    
 
     async fetchAvailableYears() {
       try {
@@ -112,11 +163,7 @@ export default {
         this.onYearRangeChange(values.map((v) => Math.round(v)));
       });
     },
-    onYearChange(newValue) {
-      this.selectedYear = newValue; // Update selectedYear with the new value
-      console.log("Year changed to:", this.selectedYear); // Debugging log
-      this.$emit("yearChanged", this.selectedYear); // Emit event to parent
-    },
+
 
     onYearRangeChange(newRange) {
       this.selectedYearRange = newRange; // Update selectedYearRange with the new range
@@ -129,6 +176,13 @@ export default {
       console.log("Emitting selected countries from ConfigPanel to MainContainer:", this.selectedCountriesInternal);
       this.$emit("update-selected-countries", this.selectedCountriesInternal);
     },
+
+    emitSelectedNumberOfClusters() {
+      // Emit the selected countries to MainContainer.vue
+      console.log("Emitting selected cluster from ConfigPanel to MainContainer:", this.selectedNumberOfClustersInternal);
+      this.$emit("update-selected-numberofclusters", this.selectedNumberOfClustersInternal);
+    },
+
 
 
   },
@@ -211,7 +265,7 @@ export default {
   flex-direction: column;
   align-items: center; /* Center the contents horizontally */
   width: 100%;
-  padding-right: 30px; /* Add padding to the right edge */
+  padding-right: 70px; /* Add padding to the right edge */
 }
 
 .slider-label {
@@ -269,6 +323,18 @@ export default {
   height: 100%; /* Ensure it spans the height of its container */
   margin: auto; /* Center it vertically */
   opacity: 0.8; /* Slight transparency for a subtle effect */
+}
+
+.selectors-section {
+  flex: 0 0 30%; /* Take 30% of the space */
+}
+
+.country-selector-section {
+  margin-top: 20px; /* Move the selector section down */
+}
+
+.custom-dropdown {
+  width: 100%;
 }
 
 

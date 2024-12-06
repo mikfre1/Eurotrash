@@ -5,13 +5,13 @@
       <div class="logo">Eurotrash</div>
       <ul class="nav-list">
         <li class="nav-item" @click="setPage('Performance')" :class="{ active: currentPage === 'Performance' }">
-          Performance
+          Overview
         </li>
         <li class="nav-item" @click="setPage('Voting Patterns')" :class="{ active: currentPage === 'Voting Patterns' }">
-          Voting Patterns
+          Voting Clusters
         </li>
-        <li class="nav-item" @click="setPage('Fun')" :class="{ active: currentPage === 'Fun' }">
-          Fun
+        <li class="nav-item" @click="setPage('Lyrics Patterns')" :class="{ active: currentPage === 'Fun' }">
+          Lyric Patterns
         </li>
       </ul>
     </div>
@@ -22,8 +22,10 @@
       <ConfigurationPanel
         :current-page="currentPage"
         :selected-countries="selectedCountries"
+        :selected-numberofclusters="selectedNumberOfClusters"
         @update-selected-countries="updateSelectedCountries"
-        @year-range-changed="onYearRangeChanged" />
+        @update-selected-numberofclusters="updateSelectedNumberofclusters"
+        @year-range-changed="onYearRangeChanged"/>
       <CountryCompositionDisclaimer />
 
       <v-container fluid class="full-height">
@@ -35,20 +37,20 @@
               <v-row class="pa-0">
                 <v-col cols="12" md="6" class="pa-0">
                   <v-card class="widget">
-                    <div class="control-panel-font">Ranking Comparison</div>
-                    <RankingComparison :selectedCountries="selectedCountries" :selectedYearRange="selectedYearRange" />
+                    <div class="control-panel-font">Most Dominating Countries</div>
+                    <MostDominatingCountries :selectedYearRange="selectedYearRange" />
                   </v-card>
                 </v-col>
 
                 <v-col cols="12" md="6" class="pa-0">
                   <v-card class="widget">
-                    <div class="control-panel-font">Most Dominating Countries</div>
-                    <MostDominatingCountries :selectedYearRange="selectedYearRange" />
+                    <div class="control-panel-font">Ranking Comparison</div>
+                    <RankingComparison :selectedCountries="selectedCountries" :selectedYearRange="selectedYearRange" />
                   </v-card>
                 </v-col>
               </v-row>
 
-              <!-- Second Row -->
+              <!-- Second Row -->     
               <v-row class="pa-0">
                 <v-col cols="12" class="pa-0">
                   <v-card class="widget">
@@ -56,9 +58,8 @@
                     <VotingMatrix :selectedYearRange="selectedYearRange" />
                   </v-card>
                 </v-col>
-              </v-row>
+              </v-row>       
             </v-container>
-
           </template>
 
           <!-- Voting Patterns Page -->
@@ -66,13 +67,15 @@
             <v-col cols="12" md="12" class="full-height">
               <v-card class="widget mb-4">
                 <div class="control-panel-font">Voting Clusters</div>
-                <VotingClusters :selectedYearRange="selectedYearRange" />
+                <VotingClusters :selectedNumberOfClusters="selectedNumberOfClusters" :selectedYearRange="selectedYearRange" />
               </v-card>
             </v-col>
+            
           </template>
+          
 
-          <!-- Fun Page -->
-          <template v-if="currentPage === 'Fun'">
+          <!-- Lyric Patterns Page-->
+          <template v-if="currentPage === 'Lyrics Patterns'">
             <v-col cols="12" md="6" class="full-height">
               <v-card class="widget mb-4">
                 <div class="control-panel-font">Word Cloud</div>
@@ -82,8 +85,8 @@
 
             <v-col cols="12" md="6" class="full-height">
               <v-card class="widget mb-4">
-                <div class="control-panel-font">Fun Widget</div>
-                <p> Placeholder Youtube Vid Widget</p>
+                <div class="control-panel-font">Most Used Lyrics</div>
+                <WordsBarChart :selectedYearRange="selectedYearRange" />
               </v-card>
             </v-col>
           </template>
@@ -101,6 +104,8 @@ import VotingClusters from "./VotingClusters.vue";
 import RankingComparison from "./RankingComparison.vue";
 import CountryCompositionDisclaimer from "./CountryCompositionDisclaimer.vue";
 import VotingMatrix from "./VotingMatrix.vue";
+import WordsBarChart from "./WordsBarChart.vue";
+
 
 export default {
   components: {
@@ -111,12 +116,14 @@ export default {
     VotingClusters,
     RankingComparison,
     VotingMatrix,
+    WordsBarChart,
   },
   data() {
     return {
       selectedYearRange: null,
       currentPage: "Performance", // Default Page
       selectedCountries: ["Sweden", "Italy"], // Default selected countries
+      selectedNumberOfClusters: 3,
     };
   },
   methods: {
@@ -128,6 +135,10 @@ export default {
     },
     updateSelectedCountries(countries) {
       this.selectedCountries = countries; // Update selected countries
+    },
+    updateSelectedNumberofclusters(numberOfClusters) {
+      this.selectedNumberOfClusters = numberOfClusters; // Update selected countries
+      console.log("updated selected cluster in maincontainer: ", this.selectedNumberOfClusters)
     },
   },
 };

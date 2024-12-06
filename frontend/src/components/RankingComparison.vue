@@ -156,7 +156,7 @@ export default {
       const {svg, width, height} = this.lineGraph;
 
       const xScale = d3.scaleLinear().range([0, width]);
-      const yScale = d3.scaleLinear().range([height, 0]);
+      const yScale = d3.scaleLinear().range([0, height]);
 
       const filteredData = Object.keys(this.rankingData)
           .filter((country) => this.selectedCountries.includes(country))

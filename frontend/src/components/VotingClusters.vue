@@ -2,15 +2,6 @@
   <div class="main-container">
     <v-card>
       <v-card-title class="controls-container">
-        <!-- Dropdown for selecting number of clusters -->
-        <v-select
-          :items="[3, 4, 5, 6, 7 ,8]"
-          label="Number of Clusters"
-          v-model="numberOfClusters"
-          outlined
-          dense
-          class="dropdown"
-        />
         <v-switch
           label="Regional Data"
           v-model="regionalData"
@@ -38,7 +29,15 @@ import axios from "axios";
 import * as d3 from "d3";
 
 export default {
-  props: ["selectedYearRange"], // Pass year range from parent
+  props: {
+    selectedNumberOfClusters: {
+      type: Number, 
+    },
+    selectedYearRange: {
+      type: Array,
+      required: true,
+    },
+  }, // Pass year range from parent
   data() {
     return {
       clusterData: [], // Data for the clusters
@@ -63,16 +62,17 @@ export default {
   watch: {
     selectedYearRange: {
       immediate: true, // Fetch data immediately on mount
-      handler() {
-        this.fetchClusterData();
+      handler(newRange) {
+        console.log("Year range changed in VotingClusters:", newRange);
+        this.fetchClusterData(this.numberOfClusters);
       },
     },
-    numberOfClusters: {
-      immediate: true, // React immediately to cluster count changes
-      handler(newCount) {
-        console.log("Cluster count emitted:", this.numberOfClusters);
-        this.$emit("cluster-count-updated", newCount);
-        this.fetchClusterData();
+    selectedNumberOfClusters: {
+      deep: true,
+      handler(newVal) {
+        this.numberOfClusters = newVal
+        console.log("Number of clusters udpdated in cluster component: ", newVal)
+        this.fetchClusterData(newVal);
       },
     },
     regionalData: {
@@ -85,13 +85,14 @@ export default {
   },
   methods: {
     
-    async fetchClusterData() {
+    async fetchClusterData(newVal) {
       try {
         const response = await axios.get("http://127.0.0.1:5000/api/voting_clusters", {
           params: {
             yearRangeStart: this.selectedYearRange[0],
             yearRangeEnd: this.selectedYearRange[1],
-            numberOfClusters: this.numberOfClusters, // Pass selected number of clusters
+            // numberOfClusters: this.numberOfClusters, // Pass selected number of clusters
+            numberOfClusters: newVal, 
           },
         });
         this.clusterData = response.data.clusters; // Cluster data

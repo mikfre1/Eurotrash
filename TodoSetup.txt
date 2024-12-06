@@ -31,3 +31,10 @@ we have a general filter part and page specific filter part
 --> add page specific filter (left in config panel) that lets a user select regions (western europe etc.)
 --> add bar chart for the words
 --> add a youtube video widget (select a country --> songs show up from the years --> link maps to youtube vid which can be shown inside the UI)
+
+
+TO DO TONIGHT:
+- add all available countries for the filter DONE
+- add a clear dynamic and static filter section in the panel on top
+- move voting heatmap to voting patterns page
+- add a bar chart for the words in the fun section (rename to song patterns)
