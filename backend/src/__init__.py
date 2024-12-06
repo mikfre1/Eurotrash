@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
+import numpy as np
 from collections import Counter
 import re
 
@@ -18,7 +19,19 @@ votes_df = pd.read_csv('../dataset/votes_cleaned.csv')
 country_df = pd.read_csv('../dataset/country_mapping_iso.csv')
 country_df['Code'] = country_df['Code'].str.lower()
 
+# global PCA for stable plotting
+pca = PCA(n_components=2)
+voting_matrix = votes_df.pivot_table(
+    index='from_country_id',
+    columns='to_country_id',
+    values='perc_of_max',  # Replace with your relevant value column
+    aggfunc='sum',
+    fill_value=0
+)
+all_columns = voting_matrix.columns.tolist()
+pca.fit(voting_matrix)
 
+initial_centroids = np.random.RandomState(42).rand(6, 2)  # Adjust dimensions to match your data
 
 # Endpoint: Most Dominating Countries
 #  --> adjust s.t:
@@ -268,14 +281,17 @@ def voting_clusters():
         aggfunc='sum',
         fill_value=0
     )
+    voting_matrix = voting_matrix.reindex(columns=all_columns, fill_value=0)
 
-    # Reduce dimensions using PCA
-    pca = PCA(n_components=2)
-    voting_matrix_2d = pca.fit_transform(voting_matrix)
+    # Reduce dimensions using PCA + add fixed random_state for consistency
+    # pca = PCA(n_components=2)
+    voting_matrix_2d = pca.transform(voting_matrix)
 
     # Apply K-Means clustering (you can adjust the number of clusters)
-    kmeans = KMeans(n_clusters=numberOfClusters, random_state=42)
-    clusters = kmeans.fit_predict(voting_matrix)
+    kmeans = KMeans(n_clusters=numberOfClusters, init=initial_centroids[:numberOfClusters], n_init=1, random_state=42)
+    clusters = kmeans.fit_predict(voting_matrix_2d)
+    country_dict = dict(zip(country_df['Code'], country_df['Name']))
+    region_dict = dict(zip(contestants_df['to_country_id'].str.lower(), contestants_df['region']))
 
     # Prepare data for visualization
     cluster_data = [
@@ -283,7 +299,9 @@ def voting_clusters():
             "country": country,
             "x": float(voting_matrix_2d[i, 0]),  # PCA Component 1
             "y": float(voting_matrix_2d[i, 1]),  # PCA Component 2
-            "cluster": int(clusters[i])  # Cluster ID
+            "cluster": int(clusters[i]),  # Cluster ID
+            "region": region_dict.get(country.lower(), "Non-European"), #Region for coloring
+            "country_name": country_dict.get(country.lower(), country)
         }
         for i, country in enumerate(voting_matrix.index)
     ]
@@ -322,6 +340,7 @@ def voting_clusters_fullName():
 
     # Use the existing `country_df` and its dictionary mapping
     country_dict = dict(zip(country_df['Code'], country_df['Name']))
+    region_dict = dict(zip(contestants_df['to_country_id'].str.lower(), contestants_df['region']))
 
     # Prepare data for visualization
     cluster_data = [
@@ -329,7 +348,8 @@ def voting_clusters_fullName():
             "country": country_dict.get(country.lower(), country),  # Convert abbreviation to full name
             "x": float(voting_matrix_2d[i, 0]),  # PCA Component 1
             "y": float(voting_matrix_2d[i, 1]),  # PCA Component 2
-            "cluster": int(clusters[i])  # Cluster ID
+            "cluster": int(clusters[i]),  # Cluster ID
+            "region": region_dict.get(country.lower(), "Non-European")
         }
         for i, country in enumerate(voting_matrix.index)
     ]
