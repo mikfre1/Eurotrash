@@ -136,7 +136,8 @@ export default {
 
 <style scoped>
 .word-cloud {
-  height: 100%; /* Match the SVG height */
+  height: 325px;
+; /* Match the SVG height */
   width: 100%; /* Match the SVG width */
   margin: auto; /* Center the word cloud */
   display: flex;
