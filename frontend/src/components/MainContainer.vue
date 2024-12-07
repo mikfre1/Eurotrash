@@ -50,15 +50,14 @@
                 </v-col>
               </v-row>
 
-              <!-- Second Row -->     
               <v-row class="pa-0">
                 <v-col cols="12" class="pa-0">
                   <v-card class="widget">
-                    <div class="control-panel-font">Voting Heatmap</div>
-                    <VotingMatrix :selectedYearRange="selectedYearRange" />
+                    <div class="control-panel-font">Top 5 Rankings per Region</div>
+                    <Top5PlacementsBarChart :selectedYearRange="selectedYearRange" />
                   </v-card>
                 </v-col>
-              </v-row>       
+              </v-row>  
             </v-container>
           </template>
 
@@ -68,6 +67,13 @@
               <v-card class="widget mb-4">
                 <div class="control-panel-font">Voting Clusters</div>
                 <VotingClusters :selectedNumberOfClusters="selectedNumberOfClusters" :selectedYearRange="selectedYearRange" />
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" class="pa-0">
+              <v-card class="widget">
+                <div class="control-panel-font">Voting Heatmap</div>
+                <VotingMatrix :selectedYearRange="selectedYearRange" />
               </v-card>
             </v-col>
             
@@ -89,6 +95,8 @@
                 <WordsBarChart :selectedYearRange="selectedYearRange" />
               </v-card>
             </v-col>
+
+
           </template>
         </v-row>
       </v-container>
@@ -105,6 +113,7 @@ import RankingComparison from "./RankingComparison.vue";
 import CountryCompositionDisclaimer from "./CountryCompositionDisclaimer.vue";
 import VotingMatrix from "./VotingMatrix.vue";
 import WordsBarChart from "./WordsBarChart.vue";
+import Top5PlacementsBarChart from "./Top5PlacementsBarChart.vue";
 
 
 export default {
@@ -117,6 +126,7 @@ export default {
     RankingComparison,
     VotingMatrix,
     WordsBarChart,
+    Top5PlacementsBarChart
   },
   data() {
     return {

@@ -438,6 +438,52 @@ def compute_cluster_regions(cluster_data, region_df):
     return region_info
 
 
+
+@app.route('/api/top5barchart', methods=['GET'])
+def top5_ranking_data():
+
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+
+    if not yearRangeStart or not yearRangeEnd:
+        return jsonify({"error": "Year range parameters are required"}), 400
+
+    # Fetch yearly rankings
+    response = requests.get(
+        "http://127.0.0.1:5000/api/yearly_rankings",
+        params={"yearRangeStart": yearRangeStart, "yearRangeEnd": yearRangeEnd},
+    )
+    yearly_rankings = response.json()
+
+    # Initialize region rankings
+    region_rankings = {}
+
+    # Iterate through yearly rankings
+    for country, years in yearly_rankings.items():
+        # Find the region for the country from the DataFrame
+        region = countries_regions_df.loc[
+            countries_regions_df['country_name'] == country, 'region'
+        ].values
+
+        if len(region) == 0:
+            region = "Unknown"
+        else:
+            region = region[0]
+
+        # Count top 5 rankings for the country
+        top5_count = sum(1 for year, value in years.items() if 1 <= value <= 5)
+
+        # Aggregate by region
+        if region not in region_rankings:
+            region_rankings[region] = 0
+        region_rankings[region] += top5_count
+
+    print(f"Top 5 rankings by region: {region_rankings}")
+    return jsonify(region_rankings)
+
+
+
+
 # Run Flask app
 if __name__ == '__main__':
     app.run(debug=True)
