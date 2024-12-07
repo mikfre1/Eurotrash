@@ -37,7 +37,7 @@
     methods: {
       async fetchWordsBarChartData() {
         try {
-          console.log("Fetching word cloud data for year:", this.selectedYearRange, "with filter:", this.selectedFilter);
+          console.log("Fetching word bar chart data for year:", this.selectedYearRange, "with filter:", this.selectedFilter);
           const response = await axios.get("http://127.0.0.1:5000/api/word_cloud_filter", {
             params: { 
               yearRangeStart: this.selectedYearRange[0],
@@ -70,9 +70,12 @@
         const height = containerHeight - margin.top - margin.bottom;
 
         // Clear previous chart
+        
         d3.select("#wordsbarchart")
         .style("background-color", "#4b4b4b") // Ensure background color is applied
-        .attr("class", "word-barchart-container");
+        .attr("class", "word-barchart-container") // Ensure the class is applied
+        .selectAll("*") // Select all child elements
+        .remove(); // Remove child elements
 
         // Append SVG element
         const svg = d3
