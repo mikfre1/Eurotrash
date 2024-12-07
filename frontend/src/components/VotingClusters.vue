@@ -1,28 +1,29 @@
 <template>
   <div class="main-container">
     <v-card>
-      <v-card-title class="controls-container">
-        <v-switch
-          label="Regional Data"
-          v-model="regionalData"
-          outlined
-          dense
-        />
-      </v-card-title>
       <div class="content-container">
-
-        <div class="plot-container">
-          <div id="scatterplot" class="scatterplot"></div>
-        </div>
+        <div class="first-container">
+          <v-card-title class="controls-container">
+            <v-switch
+              label="Regional Data"
+              v-model="regionalData"
+              outlined
+              dense
+            />
+          </v-card-title>
+          <div class="plot-container">
+            <div id="scatterplot" class="scatterplot"></div>
+          </div>
+      </div>
 
         <div class="widget-container">
           <div id="barchart-container"></div>
         </div>
-
       </div>
     </v-card>
   </div>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -105,7 +106,7 @@ export default {
     },
 
     drawScatterPlot() {
-      const width = 800;
+      const width = 1200;
       const height = 600;
 
       // Clear existing visualization
@@ -336,6 +337,10 @@ export default {
   margin-bottom: 10px;
 }
 
+.first-container {
+  flex: 2;
+}
+
 .content-container {
   display: flex;
   align-items: flex-start; /* Align all child containers to the top */
@@ -348,8 +353,9 @@ export default {
 .widget-container {
   display: flex;
   flex-direction: column; /* Stacks bar charts vertically */
-  flex: 1;
-  margin-left: 20px;
+  flex: unset;
+  margin-top: 20px; /* Adds spacing when stacked vertically */
+  margin-left: 0px;
   padding: 10px;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
@@ -358,6 +364,13 @@ export default {
   position: relative; /* Ensures the container is positioned correctly */
   overflow-y: auto; /* Allows scrolling if the content exceeds the container's height */
   max-height: 800px; /* Adjust to your preferred height */
+}
+
+/* Adjustments for wider screens */
+@media (min-width: 1200px) {
+  .widget-container {
+    flex: 0 0 500px; /* Limits width to 300px */
+  }
 }
 
 #barchart-container::-webkit-scrollbar {
