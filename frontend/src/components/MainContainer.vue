@@ -5,10 +5,10 @@
       <div class="logo">Eurotrash</div>
       <ul class="nav-list">
         <li class="nav-item" @click="setPage('Performance')" :class="{ active: currentPage === 'Performance' }">
-          Overview
+          Performance Patterns
         </li>
         <li class="nav-item" @click="setPage('Voting Patterns')" :class="{ active: currentPage === 'Voting Patterns' }">
-          Voting Clusters
+          Voting Patterns
         </li>
         <li class="nav-item" @click="setPage('Lyrics Patterns')" :class="{ active: currentPage === 'Fun' }">
           Lyric Patterns
@@ -53,11 +53,22 @@
               <v-row class="pa-0">
                 <v-col cols="12" class="pa-0">
                   <v-card class="widget">
-                    <div class="control-panel-font">Top 5 Rankings per Region</div>
+                    <div class="control-panel-font">Expected Number of Top 5 Rankings per Competition</div>
                     <Top5PlacementsBarChart :selectedYearRange="selectedYearRange" />
                   </v-card>
                 </v-col>
-              </v-row>  
+              </v-row> 
+              <v-row class="pa-0">
+                <v-col cols="12" class="pa-0">
+                    <v-card class="widget">
+                      <div class="control-panel-font">Probability of a Top 5 Ranking per country and Competition</div>
+                      <Top5PlacementTotalBarChart :selectedYearRange="selectedYearRange" />
+                    </v-card>
+                  </v-col>
+                </v-row>
+
+
+       
             </v-container>
           </template>
 
@@ -114,6 +125,7 @@ import CountryCompositionDisclaimer from "./CountryCompositionDisclaimer.vue";
 import VotingMatrix from "./VotingMatrix.vue";
 import WordsBarChart from "./WordsBarChart.vue";
 import Top5PlacementsBarChart from "./Top5PlacementsBarChart.vue";
+import Top5PlacementTotalBarChart from "./Top5PlacementNormalizedBarChart.vue";
 
 
 export default {
@@ -126,7 +138,8 @@ export default {
     RankingComparison,
     VotingMatrix,
     WordsBarChart,
-    Top5PlacementsBarChart
+    Top5PlacementsBarChart,
+    Top5PlacementTotalBarChart
   },
   data() {
     return {

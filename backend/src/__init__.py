@@ -441,7 +441,6 @@ def compute_cluster_regions(cluster_data, region_df):
 
 @app.route('/api/top5barchart', methods=['GET'])
 def top5_ranking_data():
-
     yearRangeStart = request.args.get('yearRangeStart', type=int)
     yearRangeEnd = request.args.get('yearRangeEnd', type=int)
 
@@ -460,6 +459,20 @@ def top5_ranking_data():
 
     # Iterate through yearly rankings
     for country, years in yearly_rankings.items():
+        # Filter years to include only those in the selected range
+        filtered_years = {year: value for year, value in years.items() if yearRangeStart <= int(year) <= yearRangeEnd}
+        
+        # Calculate the total number of top 5 rankings and number of participations
+        total_top5 = sum(1 for value in filtered_years.values() if 1 <= value <= 5)
+        participations = len(filtered_years)  # Count of years with an entry
+
+        # Skip if no participations to avoid division by zero
+        if participations == 0:
+            continue
+
+        # Calculate the average number of top 5 rankings for the country
+        average_top5 = total_top5 / participations
+
         # Find the region for the country from the DataFrame
         region = countries_regions_df.loc[
             countries_regions_df['country_name'] == country, 'region'
@@ -470,16 +483,74 @@ def top5_ranking_data():
         else:
             region = region[0]
 
-        # Count top 5 rankings for the country
-        top5_count = sum(1 for year, value in years.items() if 1 <= value <= 5)
+        # Aggregate by region
+        if region not in region_rankings:
+            region_rankings[region] = 0
+        region_rankings[region] += average_top5
+
+    print(f"Top 5 rankings by region (average per competition): {region_rankings}")
+    return jsonify(region_rankings)
+
+@app.route('/api/top5barchartnormalized', methods=['GET'])
+def top5_ranking_data_normalized():
+    yearRangeStart = request.args.get('yearRangeStart', type=int)
+    yearRangeEnd = request.args.get('yearRangeEnd', type=int)
+
+    if not yearRangeStart or not yearRangeEnd:
+        return jsonify({"error": "Year range parameters are required"}), 400
+
+    # Fetch yearly rankings
+    response = requests.get(
+        "http://127.0.0.1:5000/api/yearly_rankings",
+        params={"yearRangeStart": yearRangeStart, "yearRangeEnd": yearRangeEnd},
+    )
+    yearly_rankings = response.json()
+
+    # Initialize region rankings and country counts
+    region_rankings = {}
+    region_country_counts = countries_regions_df.groupby('region')['country_name'].count().to_dict()
+
+    # Iterate through yearly rankings
+    for country, years in yearly_rankings.items():
+        # Filter years to include only those in the selected range
+        filtered_years = {year: value for year, value in years.items() if yearRangeStart <= int(year) <= yearRangeEnd}
+        
+        # Calculate the total number of top 5 rankings and number of participations
+        total_top5 = sum(1 for value in filtered_years.values() if 1 <= value <= 5)
+        participations = len(filtered_years)  # Count of years with an entry
+
+        # Skip if no participations to avoid division by zero
+        if participations == 0:
+            continue
+
+        # Calculate the average number of top 5 rankings for the country
+        average_top5 = total_top5 / participations
+
+        # Find the region for the country from the DataFrame
+        region = countries_regions_df.loc[
+            countries_regions_df['country_name'] == country, 'region'
+        ].values
+
+        if len(region) == 0:
+            region = "Unknown"
+        else:
+            region = region[0]
 
         # Aggregate by region
         if region not in region_rankings:
             region_rankings[region] = 0
-        region_rankings[region] += top5_count
+        region_rankings[region] += average_top5
 
-    print(f"Top 5 rankings by region: {region_rankings}")
-    return jsonify(region_rankings)
+    # Normalize region rankings by the number of countries in each region
+    normalized_region_rankings = {
+        region: region_rankings[region] / region_country_counts.get(region, 1)
+        for region in region_rankings
+    }
+
+    print(f"Top 5 rankings by region (normalized per country): {normalized_region_rankings}")
+    return jsonify(normalized_region_rankings)
+
+
 
 
 

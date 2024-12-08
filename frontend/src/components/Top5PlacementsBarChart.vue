@@ -52,7 +52,7 @@
         d3.select("#top5-placements-barchart").selectAll("*").remove();
   
         // Define dimensions and margin
-        const margin = { top: 20, right: 20, bottom: 50, left: 150 };
+        const margin = { top: 20, right: 50, bottom: 50, left: 150 };
         const containerWidth = document.getElementById("top5-placements-barchart").clientWidth;
         const heightPerBar = 40;
         const numBars = Object.keys(this.top5rankingData).length || 5; // Default to 5 if no data yet
@@ -75,29 +75,35 @@
       updateBarChart() {
         if (!this.barchart || Object.keys(this.top5rankingData).length === 0) return;
 
-        const { svg, width, height, heightPerBar } = this.barchart;
+        const { svg, width, heightPerBar } = this.barchart;
 
         // Prepare data and ensure `count` is parsed as a number
         const data = Object.entries(this.top5rankingData)
             .filter(([region]) => region !== "Unknown") // Exclude "Unknown" category
             .map(([region, count]) => ({
-            region,
-            count: parseInt(count, 10), // Parse `count` as an integer
+                region,
+                count: parseFloat(count), // Ensure `count` is a floating-point number
             }));
 
         // Sort data by count
         data.sort((a, b) => b.count - a.count);
 
-        // Update scales
+        // Recalculate height based on the number of regions
+        const numBars = data.length;
+        const newHeight = heightPerBar * numBars + this.barchart.margin.top + this.barchart.margin.bottom;
+
+        d3.select(svg.node().parentNode)
+            .attr("height", newHeight);
+
         const yScale = d3
             .scaleBand()
             .domain(data.map((d) => d.region))
-            .range([0, height - heightPerBar]) // Adjust for the total height
+            .range([0, newHeight - this.barchart.margin.top - this.barchart.margin.bottom])
             .padding(0.1);
 
         const xScale = d3
             .scaleLinear()
-            .domain([0, d3.max(data, (d) => d.count)]) // Use parsed `count` values
+            .domain([0, d3.max(data, (d) => d.count)]) // Use floating-point values
             .range([0, width]);
 
         // Add X-axis
@@ -106,8 +112,8 @@
             .data([null])
             .join("g")
             .attr("class", "x-axis")
-            .attr("transform", `translate(0, ${height - heightPerBar})`)
-            .call(d3.axisBottom(xScale).ticks(5))
+            .attr("transform", `translate(0, ${newHeight - this.barchart.margin.top - this.barchart.margin.bottom})`)
+            .call(d3.axisBottom(xScale).ticks(5).tickFormat(d3.format(".2f"))) // Format ticks as floating-point
             .selectAll("text")
             .style("fill", "#f8f9fa");
 
@@ -126,26 +132,54 @@
             .selectAll(".bar")
             .data(data, (d) => d.region)
             .join(
-            (enter) =>
-                enter
-                .append("rect")
-                .attr("class", "bar")
-                .attr("y", (d) => yScale(d.region))
-                .attr("height", yScale.bandwidth())
-                .attr("x", 0)
-                .attr("width", (d) => xScale(d.count))
-                .attr("fill", "#17a2b8"),
-            (update) =>
-                update
-                .transition()
-                .duration(300)
-                .attr("width", (d) => xScale(d.count)),
-            (exit) => exit.remove()
+                (enter) =>
+                    enter
+                        .append("rect")
+                        .attr("class", "bar")
+                        .attr("y", (d) => yScale(d.region))
+                        .attr("height", yScale.bandwidth())
+                        .attr("x", 0)
+                        .attr("width", (d) => xScale(d.count))
+                        .attr("fill", "#17a2b8"),
+                (update) =>
+                    update
+                        .transition()
+                        .duration(300)
+                        .attr("width", (d) => xScale(d.count))
+                        .attr("y", (d) => yScale(d.region))
+                        .attr("height", yScale.bandwidth()),
+                (exit) => exit.remove()
             );
 
-        // Remove labels on bars
-        svg.selectAll(".bar-label").remove();
-        },
+        // Add labels on bars
+        svg
+          .selectAll(".bar-label")
+          .data(data, (d) => d.region) // Use the region name as the key
+          .join(
+              (enter) =>
+                  enter
+                      .append("text")
+                      .attr("class", "bar-label")
+                      .attr("x", (d) => xScale(d.count) + 10) // Place slightly to the right of the bar
+                      .attr("y", (d) => yScale(d.region) + yScale.bandwidth() / 2) // Center vertically
+                      .attr("dy", "0.35em") // Adjust for text alignment
+                      .style("fill", "#f8f9fa") // Label color
+                      .style("font-size", "12px") // Font size for labels
+                      .text((d) => d.count.toFixed(2)), // Display value with 2 decimal places
+              (update) =>
+                  update
+                      .transition()
+                      .duration(300)
+                      .attr("x", (d) => xScale(d.count) + 10) // Recalculate position for updated data
+                      .attr("y", (d) => yScale(d.region) + yScale.bandwidth() / 2) // Ensure correct alignment
+                      .text((d) => d.count.toFixed(2)), // Ensure consistent format
+              (exit) => exit.remove()
+          );
+
+
+    },
+
+
 
 
     },
