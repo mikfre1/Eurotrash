@@ -127,6 +127,9 @@ export default {
     }
     ,
     drawLegend(svg, countries, width) {
+      
+      svg.selectAll(".legend").remove();
+
       const legend = svg
           .selectAll(".legend")
           .data(countries)
